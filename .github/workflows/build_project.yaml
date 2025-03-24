@@ -6,10 +6,12 @@ jobs:
   ubuntu-build:
     runs-on: ubuntu-latest
     steps:
-      - name: install-and-cache apt tools
-        uses: tecolicom/actions-use-apt-tools@v1.6
+      - name: Install deps
+        uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          tools: libglfw3 libglfw3 libglew-dev
+          packages: libglfw3 libglfw3 libglew-dev
+          version: 1.0
+
       - name: Checkout
         uses: actions/checkout@v2.0.0
       - name: Build project
