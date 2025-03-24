@@ -36,8 +36,11 @@ target_sources(
 	DebugBoardUI
 	PRIVATE
         src/main.cpp
-		src/datasources/ProgrammingDataSource.cpp
 		src/platform/glfw_opengl_glue.cpp
 		src/Workspace.cpp
+
+		src/datasources/ProgrammingDataSource.cpp
+		# src/datasources/DebugBoard.cpp
+
 
 )
