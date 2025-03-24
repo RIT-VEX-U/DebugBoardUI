@@ -9,7 +9,7 @@ jobs:
       - name: Install deps
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libglfw3 libglfw3 libglew-dev extra-cmake-modules
+          packages: libglfw3 libglfw3 glfw3 libglew-dev extra-cmake-modules
           version: 1.0
 
       - name: Checkout
