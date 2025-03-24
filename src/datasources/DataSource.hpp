@@ -5,7 +5,8 @@
 
 using Data = int;
 class DataSource {
-  virtual ~DataSource();
+public:
+  virtual ~DataSource() {}
 
   virtual std::vector<Channel> channels() = 0;
   virtual std::string name() = 0;

@@ -31,11 +31,7 @@ target_sources(
 	DebugBoardUI
 	PRIVATE
         src/main.cpp
+		src/datasources/ProgrammingDataSource.cpp
 		src/platform/glfw_opengl_glue.cpp
 
-        # ${CMAKE_SOURCE_DIR}/implot/implot.cpp
-        # ${CMAKE_SOURCE_DIR}/implot/implot_items.cpp
-        # ${CMAKE_SOURCE_DIR}/implot/implot_demo.cpp
-
-        # ${CMAKE_SOURCE_DIR}/imgui-knobs/imgui-knobs.cpp
 )
