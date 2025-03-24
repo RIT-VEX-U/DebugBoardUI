@@ -5,6 +5,8 @@
 #include "platform/glue.hpp"
 #include <math.h>
 
+#include "widgets/ControlSystems/PidVizWidget.hpp"
+#include "widgets/Widget.hpp"
 #include <cstdio>
 #include <format>
 #include <string>
@@ -100,6 +102,8 @@ void Demo_RealtimePlots() {
 }
 
 int main() {
+  InitialRegisterWidgets();
+
   Platform::Data pdata = Platform::init("Debug Board UI");
 
   // Our state
@@ -116,6 +120,8 @@ int main() {
     if (show_plot_window) {
       ImPlot::ShowDemoWindow(&show_demo_window);
     }
+
+    DrawNewWidgetUI();
 
     Platform::postrender(pdata);
   }

@@ -7,6 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 add_subdirectory(vendor)
+add_subdirectory(src/widgets)
+
 ## project
 project (
 	DebugBoardUI
@@ -26,12 +28,13 @@ target_include_directories(
 target_include_directories(DebugBoardUI PUBLIC vendor/imgui/ vendor/imgui/backends vendor/)
 
 
-target_link_libraries(DebugBoardUI PRIVATE VendorDeps)
+target_link_libraries(DebugBoardUI PRIVATE VendorDeps Widgets)
 target_sources(
 	DebugBoardUI
 	PRIVATE
         src/main.cpp
 		src/datasources/ProgrammingDataSource.cpp
 		src/platform/glfw_opengl_glue.cpp
+		src/widgets/Widget.cpp
 
 )
