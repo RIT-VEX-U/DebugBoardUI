@@ -154,6 +154,7 @@ void cleanup(Data pdata) {
 
   glfwDestroyWindow(data->window);
   glfwTerminate();
+  delete data;
 }
 
 bool shouldclose(Data pdata) {

@@ -9,6 +9,7 @@ namespace Workspace {
 WidgetRegistry reg;
 
 bool draw_plot_window;
+bool draw_demo_window;
 void Demo_RealtimePlots();
 void Init() { AddWidgetsToCollection(reg); }
 
@@ -44,14 +45,51 @@ void DrawNewWidgetUI() {
   }
   ImGui::End();
 }
+void DrawMenuBar() {
+  ImGui::BeginMainMenuBar();
+  {
+    {
+      if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Open Workspace", "Ctrl + O")) {
+          printf("Open workspace\n");
+        }
+        ImGui::MenuItem("Save Workspace", "Ctrl + S");
+        ImGui::EndMenu();
+      }
+    }
+
+    {
+      if (ImGui::BeginMenu("Help")) {
+        ImGui::MenuItem("Information about this");
+        ImGui::EndMenu();
+      }
+    }
+  }
+}
+
+void DrawNewDatasourceUI() {
+  if (ImGui::Begin("Datasources")) {
+    if (ImGui::CollapsingHeader("New Source", ImGuiTreeNodeFlags_DefaultOpen)) {
+      ImGui::Button("Debug Board");
+      ImGui::Button("File");
+      ImGui::Button("Programming");
+    }
+    ImGui::Separator();
+
+    // for (auto source : active_datasource){
+    //
+  }
+  ImGui::End();
+}
+
 void Draw() {
   auto vp = ImGui::GetMainViewport();
   ImGuiID id = 0;
   ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(id, vp);
+  DrawMenuBar();
+
   DrawNewWidgetUI();
-
-  ImGui::BeginMainMenuBar();
-
+  DrawNewDatasourceUI();
   ImGui::EndMainMenuBar();
 
   for (auto [id, widget] : active_widgets) {
@@ -60,6 +98,9 @@ void Draw() {
 
   if (draw_plot_window) {
     ImPlot::ShowDemoWindow(&draw_plot_window);
+  }
+  if (draw_demo_window) {
+    ImGui::ShowDemoWindow(&draw_demo_window);
   }
 }
 float to_radian(float deg) { return (deg * (3.14 / 180.0)); }

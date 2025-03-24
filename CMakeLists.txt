@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # for IDEs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g") # For GCC/Clang
 
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
