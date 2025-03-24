@@ -6,7 +6,11 @@ jobs:
   ubuntu-build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.4
+      - name: install-and-cache apt tools
+        uses: tecolicom/actions-use-apt-tools@v1.6
+        with:
+          tools: libglfw3 libglfw3 libglew-dev
+      - name: Checkout
+        uses: actions/checkout@v2.0.0
+      - name: Build project
+        uses: nicledomaS/cmake_build_action@v1.4
