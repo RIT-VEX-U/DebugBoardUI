@@ -14,5 +14,6 @@ target_sources(Widgets PRIVATE
     ControlSystems/PidVizWidget.cpp
     Visualization/FieldMapWidget.cpp
     Widget.cpp
+    WidgetRegistry.cpp
     RegisteredWidgets.cpp
 )

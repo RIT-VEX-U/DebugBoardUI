@@ -1,6 +1,7 @@
 #include "Visualization/FieldMapWidget.hpp"
 #include "imgui.h"
-FieldMapWidget::FieldMapWidget(std::string field_image_path) {}
+FieldMapWidget::FieldMapWidget(WidgetId id, std::string field_image_path)
+    : WidgetImpl(id) {}
 void FieldMapWidget::ReceiveData() {}
 void FieldMapWidget::Draw() {
   ImGui::Begin("Field Map");

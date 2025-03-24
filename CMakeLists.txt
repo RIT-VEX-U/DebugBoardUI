@@ -35,6 +35,6 @@ target_sources(
         src/main.cpp
 		src/datasources/ProgrammingDataSource.cpp
 		src/platform/glfw_opengl_glue.cpp
-		src/widgets/Widget.cpp
+		src/Workspace.cpp
 
 )

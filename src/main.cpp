@@ -5,8 +5,10 @@
 #include "platform/glue.hpp"
 #include <math.h>
 
+#include "Workspace.hpp"
 #include "widgets/ControlSystems/PidVizWidget.hpp"
 #include "widgets/Widget.hpp"
+#include "widgets/WidgetRegistry.hpp"
 #include <cstdio>
 #include <format>
 #include <string>
@@ -102,13 +104,13 @@ void Demo_RealtimePlots() {
 }
 
 int main() {
-  InitialRegisterWidgets();
+  Workspace::Init();
 
   Platform::Data pdata = Platform::init("Debug Board UI");
 
   // Our state
-  bool show_demo_window = true;
-  bool show_plot_window = true;
+  bool show_demo_window = false;
+  bool show_plot_window = false;
 
   // Main loop
   while (!Platform::shouldclose(pdata)) {
@@ -120,8 +122,7 @@ int main() {
     if (show_plot_window) {
       ImPlot::ShowDemoWindow(&show_demo_window);
     }
-
-    DrawNewWidgetUI();
+    Workspace::Draw();
 
     Platform::postrender(pdata);
   }
