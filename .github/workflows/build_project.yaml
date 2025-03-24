@@ -10,7 +10,7 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libglfw3 libglfw3 glfw3 libglew-dev extra-cmake-modules
-          version: 1.0
+          version: 1.01
 
       - name: Checkout
         uses: actions/checkout@v2.0.0
