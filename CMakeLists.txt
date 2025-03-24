@@ -20,6 +20,7 @@ add_executable(DebugBoardUI)
 target_include_directories(
 	DebugBoardUI
   	PRIVATE 
+	src/
 )
 
 target_include_directories(DebugBoardUI PUBLIC vendor/imgui/ vendor/imgui/backends vendor/)
@@ -30,6 +31,7 @@ target_sources(
 	DebugBoardUI
 	PRIVATE
         src/main.cpp
+		src/platform/glfw_opengl_glue.cpp
 
         # ${CMAKE_SOURCE_DIR}/implot/implot.cpp
         # ${CMAKE_SOURCE_DIR}/implot/implot_items.cpp
