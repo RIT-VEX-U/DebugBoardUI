@@ -22,10 +22,10 @@ target_include_directories(
   	PRIVATE 
 )
 
-target_include_directories(DebugBoardUI PUBLIC vendor/imgui/)
+target_include_directories(DebugBoardUI PUBLIC vendor/imgui/ vendor/imgui/backends vendor/)
 
 
-
+target_link_libraries(DebugBoardUI PRIVATE VendorDeps)
 target_sources(
 	DebugBoardUI
 	PRIVATE
