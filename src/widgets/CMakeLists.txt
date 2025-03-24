@@ -7,7 +7,7 @@ project (
 
 add_library(Widgets)
 
-target_include_directories(Widgets PRIVATE ${CMAKE_SOURCE_DIR}/vendor/imgui/)
+target_include_directories(Widgets PRIVATE ${CMAKE_SOURCE_DIR}/vendor/imgui/ ${CMAKE_SOURCE_DIR}/vendor)
 target_include_directories(Widgets PUBLIC ./)
 
 target_sources(Widgets PRIVATE 
@@ -16,4 +16,5 @@ target_sources(Widgets PRIVATE
     Widget.cpp
     WidgetRegistry.cpp
     RegisteredWidgets.cpp
+    GraphUtils.cpp
 )

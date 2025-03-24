@@ -1,10 +1,12 @@
 #include "Visualization/FieldMapWidget.hpp"
 #include "imgui.h"
 FieldMapWidget::FieldMapWidget(WidgetId id, std::string field_image_path)
-    : WidgetImpl(id) {}
+    : WidgetImpl(id), flipDiagonally(false) {}
 void FieldMapWidget::ReceiveData() {}
+
 void FieldMapWidget::Draw() {
-  ImGui::Begin("Field Map");
-  ImGui::Checkbox("Flip Diagonally", &flipDiagonally);
+  if (ImGui::Begin("Field Map")) {
+    ImGui::Checkbox("Flip Diagonally", &flipDiagonally);
+  }
   ImGui::End();
 }

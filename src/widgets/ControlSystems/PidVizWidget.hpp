@@ -1,5 +1,5 @@
 #pragma once
-
+#include "GraphUtils.hpp"
 #include "Widget.hpp"
 class PidVizWidget : public WidgetImpl {
 public:
@@ -13,4 +13,7 @@ public:
 
 private:
   bool plot_error_;
+  double t;
+  ScrollingBuffer sdata;
+  RollingBuffer rdata;
 };
