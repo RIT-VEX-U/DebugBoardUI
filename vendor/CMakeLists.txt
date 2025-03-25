@@ -13,7 +13,6 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(json)
 target_link_libraries(VendorDeps PUBLIC nlohmann_json::nlohmann_json)
 
-    
 
 ## Find dependencies
 find_package(glfw3 REQUIRED)
@@ -44,4 +43,6 @@ target_sources(VendorDeps PRIVATE
     implot/implot.cpp
     implot/implot_demo.cpp
     implot/implot_items.cpp
+
+    easywsclient/easywsclient.cpp
 )
