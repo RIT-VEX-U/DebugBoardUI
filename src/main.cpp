@@ -19,7 +19,7 @@ int main() {
 
   // Main loop
   while (!Platform::shouldclose(pdata)) {
-    board.poll();
+    // board.poll();
     Platform::prerender(pdata);
 
     Workspace::Draw();
