@@ -14,8 +14,11 @@ add_subdirectory(json)
 target_link_libraries(VendorDeps PUBLIC nlohmann_json::nlohmann_json)
 
 
+add_subdirectory(glfw)
+
 ## Find dependencies
-find_package(glfw3 REQUIRED)
+# find_package(glfw3 REQUIRED)
+# find_package(Vulkan REQUIRED)
 
 # Use  cmake -S . -B build/ -DOpenGL_GL_PREFERENCE=GLVND
 # to skip legacy OpenGL library

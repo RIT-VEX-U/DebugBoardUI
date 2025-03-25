@@ -4,10 +4,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # for IDEs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g") # For GCC/Clang
-
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
 
 add_subdirectory(vendor)
 add_subdirectory(src/widgets)
@@ -32,7 +28,8 @@ target_include_directories(DebugBoardUI PUBLIC
 	vendor/imgui/ 
 	vendor/imgui/backends/ 
 	vendor/ 
-	vendor/json/include/)
+	vendor/json/include/
+	vendor/glfw/include/)
 
 
 target_link_libraries(DebugBoardUI PRIVATE VendorDeps Widgets)
