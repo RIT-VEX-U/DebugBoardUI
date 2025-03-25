@@ -12,7 +12,7 @@
 #include <string>
 
 int main() {
-  DebugBoard board{"ws://localhost:8080/ws"};
+  // DebugBoard board{"ws://localhost:8080/ws"};
   Workspace::Init();
 
   Platform::Data pdata = Platform::init("Debug Board UI");
