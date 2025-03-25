@@ -6,20 +6,18 @@ project (
 	LANGUAGES CXX)
 add_library(VendorDeps)
 
-
+# Dependencies ================================================================
+# Nlohmann Json -------------------------------------------
 # Typically you don't care so much for a third party library's tests to be
 # run from your own project's code.
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(json)
 target_link_libraries(VendorDeps PUBLIC nlohmann_json::nlohmann_json)
 
-
+# GLFW ----------------------------------------------------
 add_subdirectory(glfw)
 
-## Find dependencies
-# find_package(glfw3 REQUIRED)
-# find_package(Vulkan REQUIRED)
-
+# OpenGL/Glew  --------------------------------------------
 # Use  cmake -S . -B build/ -DOpenGL_GL_PREFERENCE=GLVND
 # to skip legacy OpenGL library
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -31,12 +29,15 @@ ELSE()
 	target_link_libraries(VendorDeps PRIVATE glfw OpenGL)
 ENDIF()
 
+# ImGui ---------------------------------------------------
+# Also implot and imgui-knobs
+target_include_directories(VendorDeps PUBLIC 
+    imgui/ 
+    imgui/backends 
+    ./                  # For imgui_config.h, easywsclient
+    )
 
 
-target_include_directories(VendorDeps PUBLIC imgui/ imgui/backends ./)
-
-
-# target_compile_definitions(VendorDeps PRIVATE ImDrawIdx=\"unsigned int\")
 target_compile_definitions(VendorDeps PRIVATE IMGUI_USER_CONFIG="imgui_config.h")
  
 target_sources(VendorDeps PRIVATE 

@@ -26,14 +26,6 @@ target_include_directories(
 	src/
 )
 
-target_include_directories(DebugBoardUI PUBLIC 
-	vendor/imgui/ 
-	vendor/imgui/backends/ 
-	vendor/ 
-	vendor/json/include/
-	vendor/glfw/include/)
-
-
 target_link_libraries(DebugBoardUI PRIVATE VendorDeps Widgets)
 
 target_sources(
@@ -43,7 +35,6 @@ target_sources(
 		src/platform/glfw_opengl_glue.cpp
 		src/Workspace.cpp
 
-		# src/datasources/ProgrammingDataSource.cpp
 		src/datasources/DebugBoard.cpp
 
 
