@@ -11,5 +11,6 @@ public:
   virtual std::vector<Channel> channels() = 0;
   virtual std::string name() = 0;
 
-  virtual std::vector<Data> poll_updates() = 0;
+  virtual std::vector<Data> updates() = 0;
+  virtual void poll() = 0;
 };
