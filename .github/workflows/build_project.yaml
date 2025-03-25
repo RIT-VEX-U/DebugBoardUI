@@ -6,6 +6,12 @@ jobs:
   ubuntu-build:
     runs-on: ubuntu-latest
     steps:
+      - name: Install deps
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libwayland-dev
+          version: 1.00
+
       - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
