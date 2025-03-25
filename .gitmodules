@@ -10,3 +10,6 @@
 [submodule "vendor/json"]
 	path = vendor/json
 	url = git@github.com:nlohmann/json.git
+[submodule "vendor/easywsclient"]
+	path = vendor/easywsclient
+	url = git@github.com:dhbaird/easywsclient.git
