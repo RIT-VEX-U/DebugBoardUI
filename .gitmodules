@@ -1,0 +1,15 @@
+[submodule "vendor/easywsclient"]
+	path = vendor/easywsclient
+	url = https://github.com/dhbaird/easywsclient.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "vendor/implot"]
+	path = vendor/implot
+	url = https://github.com/epezent/implot.git
+[submodule "vendor/json"]
+	path = vendor/json
+	url = https://github.com/nlohmann/json.git
+[submodule "vendor/imgui-knobs"]
+	path = vendor/imgui-knobs
+	url = https://github.com/altschuler/imgui-knobs.git
