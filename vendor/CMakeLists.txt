@@ -33,7 +33,12 @@ ENDIF()
 
 
 
-target_include_directories(VendorDeps PUBLIC imgui/ imgui/backends)
+target_include_directories(VendorDeps PUBLIC imgui/ imgui/backends ./)
+
+
+# target_compile_definitions(VendorDeps PRIVATE ImDrawIdx=\"unsigned int\")
+target_compile_definitions(VendorDeps PRIVATE IMGUI_USER_CONFIG="imgui_config.h")
+ 
 target_sources(VendorDeps PRIVATE 
     imgui/imgui.cpp 
     imgui/imgui_draw.cpp 

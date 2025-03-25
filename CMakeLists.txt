@@ -13,10 +13,12 @@ project (
 	DebugBoardUI
 	DESCRIPTION "DebugBoardUI using ImGui with GLFW, OpenGL3"
 	LANGUAGES CXX)
-
-
-## Create main executable
+	
+	
+	## Create main executable
 add_executable(DebugBoardUI)
+# target_compile_definitions(DebugBoardUI PRIVATE ImDrawIdx=\"unsigned int\")
+target_compile_definitions(DebugBoardUI PRIVATE IMGUI_USER_CONFIG="imgui_config.h")
 
 target_include_directories(
 	DebugBoardUI

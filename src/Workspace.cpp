@@ -8,7 +8,7 @@
 namespace Workspace {
 WidgetRegistry reg;
 
-bool draw_plot_window;
+bool draw_plot_window = true;
 bool draw_demo_window;
 void Demo_RealtimePlots();
 void Init() { AddWidgetsToCollection(reg); }
