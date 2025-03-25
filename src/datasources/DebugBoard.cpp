@@ -9,6 +9,9 @@ DebugBoard::~DebugBoard() {
 }
 
 void DebugBoard::poll() {
+  if (ws_ == nullptr) {
+    return;
+  }
   ws_->poll(1);
   auto handler = [](const std::string &txt) {
     printf("Got text %s\n", txt.c_str());
