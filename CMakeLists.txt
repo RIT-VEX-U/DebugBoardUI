@@ -28,10 +28,15 @@ target_include_directories(
 	src/
 )
 
-target_include_directories(DebugBoardUI PUBLIC vendor/imgui/ vendor/imgui/backends vendor/)
+target_include_directories(DebugBoardUI PUBLIC 
+	vendor/imgui/ 
+	vendor/imgui/backends/ 
+	vendor/ 
+	vendor/json/include/)
 
 
 target_link_libraries(DebugBoardUI PRIVATE VendorDeps Widgets)
+
 target_sources(
 	DebugBoardUI
 	PRIVATE

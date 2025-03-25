@@ -4,11 +4,11 @@
 #include <math.h>
 
 #include "Workspace.hpp"
+#include "nlohmann/json.hpp"
 #include "widgets/WidgetRegistry.hpp"
 #include <cstdio>
 #include <format>
 #include <string>
-
 int main() {
   Workspace::Init();
 

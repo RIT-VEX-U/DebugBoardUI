@@ -4,8 +4,16 @@ project (
 	VendorDeps
 	DESCRIPTION "vendor dependencies"
 	LANGUAGES CXX)
-
 add_library(VendorDeps)
+
+
+# Typically you don't care so much for a third party library's tests to be
+# run from your own project's code.
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(json)
+target_link_libraries(VendorDeps PUBLIC nlohmann_json::nlohmann_json)
+
+    
 
 ## Find dependencies
 find_package(glfw3 REQUIRED)
