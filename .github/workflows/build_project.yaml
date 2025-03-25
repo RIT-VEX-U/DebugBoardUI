@@ -9,7 +9,7 @@ jobs:
       - name: Install deps
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libwayland-dev libxkbcommon
+          packages: libwayland-dev libxkbcommon-dev
           version: 1.00
 
       - name: Checkout
