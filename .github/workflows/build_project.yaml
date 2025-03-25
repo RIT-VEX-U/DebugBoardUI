@@ -19,3 +19,17 @@ jobs:
       - name: Build project
         uses: nicledomaS/cmake_build_action@v1.4
 
+
+  windows-build:
+    runs-on: windows-latest
+      ubuntu-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: MSVC Setup
+        uses: ilammy/msvc-dev-cmd@v1.4.1
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          submodules: recursive
+      - name: Build project
+        uses: nicledomaS/cmake_build_action@v1.4
