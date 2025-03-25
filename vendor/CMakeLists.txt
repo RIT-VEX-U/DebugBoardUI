@@ -35,6 +35,7 @@ target_include_directories(VendorDeps PUBLIC
     imgui/ 
     imgui/backends 
     ./                  # For imgui_config.h, easywsclient
+    glfw/include
     )
 
 
