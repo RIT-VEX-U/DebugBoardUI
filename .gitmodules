@@ -7,3 +7,6 @@
 [submodule "vendor/imgui-knobs"]
 	path = vendor/imgui-knobs
 	url = git@github.com:altschuler/imgui-knobs.git
+[submodule "vendor/json"]
+	path = vendor/json
+	url = git@github.com:nlohmann/json.git
