@@ -22,8 +22,6 @@ jobs:
 
   windows-build:
     runs-on: windows-latest
-      ubuntu-build:
-    runs-on: ubuntu-latest
     steps:
       - name: MSVC Setup
         uses: ilammy/msvc-dev-cmd@v1.4.1
