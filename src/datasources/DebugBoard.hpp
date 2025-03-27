@@ -1,20 +1,42 @@
 #include "Types.hpp"
 #include <cstdint>
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 #include "easywsclient/easywsclient.hpp"
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
+
 class DebugBoard : public DataSource {
 public:
-  DebugBoard(std::string url);
+  DebugBoard();
   ~DebugBoard();
+  std::vector<DataUpdate> PollData() override;
+  DataElementSet ProvidedData() const override;
+
+  void feedPacket(const std::string &json_obj);
+  void feedPacket(const json &json_obj);
+
+private:
+  DataElementSet current_channels;
+  std::vector<DataUpdate> unread_updates;
+};
+
+class DebugBoardWebsocket : DebugBoard {
+public:
+  using TimeDuration = std::chrono::duration<int64_t>;
+
+  DebugBoardWebsocket(const std::string &ws_url,
+                      TimeDuration retry_period = std::chrono::seconds(1));
+
   std::string Name() const override;
   std::vector<DataUpdate> PollData() override;
-  DebugBoard::ProvidedDataT ProvidedData() const override;
   void Draw() override;
 
 private:
-  std::string url_;
+  std::string ws_url_;
   std::unique_ptr<easywsclient::WebSocket> ws_;
+  std::chrono::time_point<std::chrono::steady_clock> last_connect_time_;
 };

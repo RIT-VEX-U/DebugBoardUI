@@ -13,18 +13,16 @@
 
 class DumbDataSource : public DataSource {
 public:
-  DumbDataSource() noexcept {}
-  ~DumbDataSource() {}
-  /// a human readable name describing this data source
-  std::string Name() const override { return "dumb source 1"; }
-  ProvidedDataT ProvidedData() const override {
-    ProvidedDataT dats;
+  DumbDataSource() noexcept {
     dats.insert(DataElementDescription{.path = {{"Voltage"}},
                                        .type_hint = DataPrimitiveType::Double});
     dats.insert(DataElementDescription{.path = {{"Current"}},
                                        .type_hint = DataPrimitiveType::Double});
-    return dats;
   }
+  ~DumbDataSource() {}
+  /// a human readable name describing this data source
+  std::string Name() const override { return "dumb source 1"; }
+  DataElementSet ProvidedData() const override { return dats; }
   std::vector<DataUpdate> PollData() override { return {}; };
 
   void Draw() override {
@@ -32,10 +30,13 @@ public:
     ImGui::Text("hellooo");
     ImGui::End();
   }
+
+private:
+  DataElementSet dats;
 };
 
 int main() {
-  DebugBoard board{"ws://localhost:8080/ws"};
+  DebugBoardWebsocket board{"ws://localhost:8080/ws"};
   Workspace::Init();
   Workspace::AddSource(std::make_shared<DumbDataSource>());
 

@@ -183,7 +183,7 @@ std::string DataLocator::toString() {
 
 bool DataPathMenu(DataLocator &current, std::string source_name,
                   std::shared_ptr<DataSource> source) {
-  DataSource::ProvidedDataT chans = source->ProvidedData();
+  DataSource::DataElementSet chans = source->ProvidedData();
 
   if (ImGui::MenuItem("receive time")) {
     current.source_name = source_name;

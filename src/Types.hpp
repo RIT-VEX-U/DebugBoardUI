@@ -82,12 +82,12 @@ struct DataElementDescriptionHash {
 
 class DataSource {
 public:
-  using ProvidedDataT =
+  using DataElementSet =
       std::unordered_set<DataElementDescription, DataElementDescriptionHash>;
   virtual ~DataSource() {}
   /// a human readable name describing this data source
   virtual std::string Name() const = 0;
-  virtual ProvidedDataT ProvidedData() const = 0;
+  virtual DataElementSet ProvidedData() const = 0;
   virtual std::vector<DataUpdate> PollData() = 0;
 
   virtual void Draw() = 0;
