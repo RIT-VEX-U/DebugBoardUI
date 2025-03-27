@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "implot/implot.h"
 #include "math.h"
+#include <../Types.hpp>
 
 PidVizWidget::PidVizWidget(WidgetId id) : WidgetImpl(id), plot_error_(false) {
   sdata.AddPoint(t, 0);
@@ -11,12 +12,19 @@ PidVizWidget::~PidVizWidget() {}
 
 void PidVizWidget::ReceiveData() {}
 void PidVizWidget::Draw() {
+
   t += 0.01;
   ImPlotAxisFlags flags =
       ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks;
 
   sdata.AddPoint(t, sin(t));
   if (ImGui::Begin("Pid Visualizer")) {
+
+    DataLocationSelector("time", t_loc);
+
+    DataLocationSelector("sp", sp_loc);
+    DataLocationSelector("pv", pv_loc);
+
     ImGui::Checkbox("Plot error", &plot_error_);
     float history = 10.0;
     if (ImPlot::BeginPlot("Scrolling", ImVec2(-1, 250))) {

@@ -1,4 +1,4 @@
-#include "datasources/DataSource.hpp"
+#include "Types.hpp"
 #include <cstdint>
 
 #include "easywsclient/easywsclient.hpp"
@@ -9,13 +9,12 @@ class DebugBoard : public DataSource {
 public:
   DebugBoard(std::string url);
   ~DebugBoard();
-  void poll() override;
-  std::vector<Channel> channels() override;
-  std::vector<Data> updates() override;
-  std::string name() override;
+  std::string Name() const override;
+  std::vector<DataUpdate> PollData() override;
+  DebugBoard::ProvidedDataT ProvidedData() const override;
+  void Draw() override;
 
 private:
   std::string url_;
   std::unique_ptr<easywsclient::WebSocket> ws_;
-  std::vector<Data> incoming_;
 };

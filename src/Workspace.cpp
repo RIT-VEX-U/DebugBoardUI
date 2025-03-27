@@ -1,4 +1,5 @@
 #include "Workspace.hpp"
+#include "Types.hpp"
 #include "imgui.h"
 #include "implot/implot.h"
 #include "math.h"
@@ -7,11 +8,12 @@
 #include <map>
 namespace Workspace {
 WidgetRegistry reg;
+std::vector<std::shared_ptr<DataSource>> sources = {};
 
-bool draw_plot_window = true;
-bool draw_demo_window;
-void Demo_RealtimePlots();
-void Init() { AddWidgetsToCollection(reg); }
+void AddSource(std::shared_ptr<DataSource> src) { sources.push_back(src); }
+
+bool draw_plot_window = false;
+bool draw_demo_window = false;
 
 static std::unordered_map<WidgetId, Widget> active_widgets = {};
 static WidgetId widget_id_count = 0;
@@ -19,6 +21,9 @@ WidgetId NextWidgetId() {
   widget_id_count++;
   return widget_id_count;
 }
+
+void Demo_RealtimePlots();
+void Init() { AddWidgetsToCollection(reg); }
 
 void OpenWidget(DefaultWidgetCreator widg_maker) {
   WidgetId nextId = NextWidgetId();
@@ -60,6 +65,8 @@ void DrawMenuBar() {
 
     {
       if (ImGui::BeginMenu("Help")) {
+        ImGui::Checkbox("Show ImGui Demo", &draw_demo_window);
+        ImGui::Checkbox("Show ImPlot Demo", &draw_plot_window);
         ImGui::MenuItem("Information about this");
         ImGui::EndMenu();
       }
@@ -75,9 +82,6 @@ void DrawNewDatasourceUI() {
       ImGui::Button("Programming");
     }
     ImGui::Separator();
-
-    // for (auto source : active_datasource){
-    //
   }
   ImGui::End();
 }
@@ -86,10 +90,15 @@ void Draw() {
   auto vp = ImGui::GetMainViewport();
   ImGuiID id = 0;
   ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(id, vp);
+  (void)dockspace_id;
   DrawMenuBar();
 
   DrawNewWidgetUI();
   DrawNewDatasourceUI();
+  for (auto source : sources) {
+    source->Draw();
+  }
+
   ImGui::EndMainMenuBar();
 
   for (auto [id, widget] : active_widgets) {
@@ -153,3 +162,78 @@ void Demo_RealtimePlots() {
 }
 
 } // namespace Workspace
+
+std::string DataPath::toString() {
+  if (path.size() == 0) {
+    return "";
+  }
+  std::string accum = path[0];
+  for (size_t i = 1; i < path.size(); i++) {
+    accum += "/" + path[i];
+  }
+  return accum;
+}
+bool DataLocator::isEmpty() { return source_name.empty(); };
+std::string DataLocator::toString() {
+  if (isEmpty()) {
+    return "(invalid location)";
+  }
+  return source_name + ":/" + path.toString();
+}
+
+bool DataPathMenu(DataLocator &current, std::string source_name,
+                  std::shared_ptr<DataSource> source) {
+  DataSource::ProvidedDataT chans = source->ProvidedData();
+
+  if (ImGui::MenuItem("receive time")) {
+    current.source_name = source_name;
+    current.path = {{"recv_time"}};
+    current.special = true;
+  }
+  ImGui::Separator();
+
+  for (DataElementDescription chan : chans) {
+    auto str = chan.path.toString();
+    bool youSelected =
+        current.path == chan.path && current.source_name == source_name;
+    if (ImGui::MenuItem(str.c_str(), nullptr, &youSelected)) {
+      current.path = chan.path;
+      current.source_name = source_name;
+      current.special = false;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool DataLocationSelector(const char *name, DataLocator &current) {
+
+  std::string current_name = current.toString();
+  bool changed = false;
+
+  float winwidth = ImGui::GetWindowWidth();
+  ImGui::TextUnformatted(name);
+  float avail_width = winwidth - ImGui::GetCursorPosX();
+
+  ImGui::SameLine();
+  std::string child_name = std::string("## source selector ") + name;
+  if (ImGui::BeginChild(
+          child_name.c_str(),
+          ImVec2(avail_width / 3, ImGui::GetTextLineHeightWithSpacing()))) {
+    if (ImGui::BeginMenu(current_name.c_str())) {
+      for (std::shared_ptr<DataSource> src : Workspace::sources) {
+        auto srcname = src->Name();
+        if (ImGui::BeginMenu(srcname.c_str())) {
+          if (DataPathMenu(current, srcname, src)) {
+            changed = true;
+          }
+          ImGui::EndMenu();
+        }
+      }
+      ImGui::EndMenu();
+    }
+  }
+  ImGui::EndChild();
+
+  return changed;
+}

@@ -1,4 +1,5 @@
 #include "datasources/DebugBoard.hpp"
+#include "imgui.h"
 
 DebugBoard::DebugBoard(std::string url)
     : url_(url), ws_(easywsclient::WebSocket::from_url(url)) {}
@@ -8,21 +9,23 @@ DebugBoard::~DebugBoard() {
   printf("Closing WS\n");
 }
 
-void DebugBoard::poll() {
+std::vector<DataUpdate> DebugBoard::PollData() {
   if (ws_ == nullptr) {
-    return;
+    return {};
   }
   ws_->poll(1);
   auto handler = [](const std::string &txt) {
-    printf("Got text %s\n", txt.c_str());
+    // printf("Got text %s\n", txt.c_str());
   };
   ws_->dispatch(handler);
-}
-std::vector<Channel> DebugBoard::channels() { return {}; }
-std::vector<Data> DebugBoard::updates() {
-  auto tmp = incoming_;
-  incoming_ = {};
-  return tmp;
+  return {};
 }
 
-std::string DebugBoard::name() { return "Debug Board at " + url_; }
+std::string DebugBoard::Name() const { return "Debug Board at " + url_; }
+
+DebugBoard::ProvidedDataT DebugBoard::ProvidedData() const {
+  DebugBoard::ProvidedDataT returnValue{};
+  return returnValue;
+}
+
+void DebugBoard::Draw() {}
