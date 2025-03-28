@@ -21,7 +21,7 @@ import (
 
 /*
 {
-	"type": "advertise",
+	"type": "advertisement",
 	"channels": [
 		{
 			"channelId": 0,
@@ -40,7 +40,7 @@ type Schema interface {
 }
 
 type StructSchema struct {
-	Name   string   `json:"name'`
+	Name   string   `json:"name"`
 	Fields []Schema `json:"fields"`
 }
 
@@ -106,9 +106,6 @@ type NumberData struct {
 
 func (n NumberData) Name() string { return n.Name_ }
 
-// func (n NumberData) MarshalJSON() ([]byte, error) {
-// return json.Marshal(n.Val)
-// }
 func (n NumberData) Value() any {
 	return n.Val
 }
@@ -131,7 +128,7 @@ func (s StringData) Value() any {
 }
 
 type StructData struct {
-	Name_ string
+	Name_ string `json:"name"`
 	Val   []Data
 }
 
@@ -139,14 +136,14 @@ func (s StructData) Name() string {
 	return s.Name_
 }
 
-// func (s StructData) MarshalJSON() ([]byte, error) {
-// m := map[string]any{}
-// for _, f := range s.Val {
-// m[f.Name()] = f.Value()
-//
-// }
-// return json.Marshal(m)
-// }
+func (s StructData) MarshalJSON() ([]byte, error) {
+	m := map[string]any{}
+	for _, f := range s.Val {
+		m[f.Name()] = f.Value()
+
+	}
+	return json.Marshal(map[string]any{s.Name(): m})
+}
 func (s StructData) Value() any {
 	m := map[string]any{}
 	for _, f := range s.Val {
@@ -165,10 +162,9 @@ func (d DataHolder) MarshalJSON() ([]byte, error) {
 	type Wrapper struct {
 		Type    string `json:"type"`
 		Channel int    `json:"channel_id"`
-		Name    string `json:"name"`
 		Data    any    `json:"data"`
 	}
-	return json.Marshal(Wrapper{"data", d.Channel, d.Data.Name(), d.Data.Value()})
+	return json.Marshal(Wrapper{"data", d.Channel, d.Data})
 }
 
 type Channel struct {
@@ -188,7 +184,7 @@ func echo(initialChannels []Channel, msgs chan Message, w http.ResponseWriter, r
 	}
 
 	adv := AdvertiseWrapper{
-		Type:     "advertise",
+		Type:     "advertisement",
 		Channels: initialChannels,
 	}
 	initSchema, err := json.Marshal(adv)

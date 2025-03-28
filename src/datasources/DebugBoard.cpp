@@ -115,11 +115,10 @@ void DebugBoard::HandleAdvertise(const json &json_obj) {
 void DebugBoard::HandleData(const json &json_obj) {
   std::vector<DataElement> updates = {};
 
-  std::string ms = json_obj.dump();
-  // printf("ms: %s\n", ms.c_str());
+  std::string ms = "outer" + json_obj.dump();
+  std::puts(ms.c_str());
 
-  if (!json_obj.contains("channel_id") ||
-      !json_obj["channel_id"].is_number_unsigned()) {
+  if (!json_obj.contains("channel_id") || !json_obj["channel_id"].is_number()) {
     printf("no channel id for packet: %s\n", ms.c_str());
     return;
   }
@@ -141,6 +140,7 @@ void DebugBoard::HandleData(const json &json_obj) {
     }
     // valid thingy
     std::string s = sup.path.toString();
+    std::puts(s.c_str());
     // printf("Checking %s\n", s.c_str());
     const std::vector<std::string> &path = sup.path.path;
     json curr_node = data;
@@ -168,6 +168,7 @@ void DebugBoard::HandleData(const json &json_obj) {
         updates.push_back(DataElement{.path = loc, .value = value});
 
       } else {
+        std::puts(curr_node.dump().c_str());
         printf("Expected double at but got something else\n");
       }
 

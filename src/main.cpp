@@ -36,9 +36,9 @@ private:
 };
 
 int main() {
+  auto board = std::make_shared<DebugBoardWebsocket>("ws://localhost:8080/ws");
   // auto board =
-  // std::make_shared<DebugBoardWebsocket>("ws://localhost:8080/ws");
-  auto board = std::make_shared<DebugBoardWebsocket>("ws://129.21.144.84/ws");
+  // std::make_shared<DebugBoardWebsocket>("ws://129.21.144.84/ws");
   Workspace::Init();
   Workspace::AddSource(board);
 

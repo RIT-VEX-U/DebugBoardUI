@@ -41,7 +41,7 @@ target_sources(
         src/main.cpp
 		src/platform/glfw_opengl_glue.cpp
 		src/Workspace.cpp
-
+		src/Types.cpp
 		src/datasources/DebugBoard.cpp
 
 
