@@ -9,7 +9,7 @@ public:
 
   void ReceiveData(DataElement data) override;
   // Use ImGui to draw a this widget
-  void Draw() override;
+  void Draw(bool *should_close) override;
 
 private:
   DataLocator t_loc;

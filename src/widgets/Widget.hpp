@@ -18,7 +18,7 @@ public:
 
   virtual void ReceiveData(DataElement data) = 0;
   // Use ImGui to draw a this widget
-  virtual void Draw() = 0;
+  virtual void Draw(bool *should_close) = 0;
 
   WidgetId Id();
 

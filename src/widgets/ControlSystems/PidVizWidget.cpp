@@ -4,27 +4,27 @@
 #include "math.h"
 #include <../Types.hpp>
 
-PidVizWidget::PidVizWidget(WidgetId id) : WidgetImpl(id), plot_error_(false) {
-  sdata.AddPoint(t, 0);
-}
+PidVizWidget::PidVizWidget(WidgetId id)
+    : WidgetImpl(id), plot_error_(false), t(0) {}
 PidVizWidget::~PidVizWidget() {}
 // void PidVizWidget::RegisterDataCallback() {}
 
 void PidVizWidget::ReceiveData(DataElement data) {
-  printf("%s ?= %s\n", data.path.toString().c_str(), sp_loc.toString().c_str());
+  // printf("%s ?= %s\n", data.path.toString().c_str(),
+  // sp_loc.toString().c_str());
   if (data.path == sp_loc) {
     t += 0.01;
     double sp = std::get<double>(data.value);
-    printf("I got %s: %f\n", data.path.toString().c_str(), sp);
+    // printf("I got %s: %f\n", data.path.toString().c_str(), sp);
     sdata.AddPoint(t, sp);
   }
 }
-void PidVizWidget::Draw() {
+void PidVizWidget::Draw(bool *should_close) {
 
-  ImPlotAxisFlags flags =
-      ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks;
+  ImPlotAxisFlags flags = 0;
+  // ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks;
 
-  if (ImGui::Begin("Pid Visualizer")) {
+  if (ImGui::Begin("Pid Visualizer", should_close)) {
     bool modified = false;
     modified |= DataLocationSelector("time", t_loc);
 
@@ -48,9 +48,11 @@ void PidVizWidget::Draw() {
       ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
       ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
       ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
-      ImPlot::PlotLine("Data", &sdata.Data[0].x, &sdata.Data[0].y,
-                       sdata.Data.size(), 0, sdata.Offset, 2 * sizeof(float));
+      if (sdata.Data.size() > 0) {
 
+        ImPlot::PlotLine("Data", &sdata.Data[0].x, &sdata.Data[0].y,
+                         sdata.Data.size(), 0, sdata.Offset, 2 * sizeof(float));
+      }
       ImPlot::EndPlot();
     }
   }

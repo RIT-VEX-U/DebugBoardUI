@@ -115,11 +115,11 @@ void DebugBoard::HandleAdvertise(const json &json_obj) {
 void DebugBoard::HandleData(const json &json_obj) {
   std::vector<DataElement> updates = {};
 
-  std::string ms = "outer" + json_obj.dump();
-  std::puts(ms.c_str());
+  // std::string ms = "outer" + json_obj.dump();
+  // std::puts(ms.c_str());
 
   if (!json_obj.contains("channel_id") || !json_obj["channel_id"].is_number()) {
-    printf("no channel id for packet: %s\n", ms.c_str());
+    // printf("no channel id for packet: %s\n", ms.c_str());
     return;
   }
   if (!json_obj.contains("data") || !json_obj["data"].is_object()) {
@@ -135,7 +135,9 @@ void DebugBoard::HandleData(const json &json_obj) {
   for (const DataElementDescription &sup : current_channels) {
     if (sup.path.path.size() < 1 ||
         sup.path.path[0] != std::to_string(channel_id)) {
-      printf("Skipping bc wrong channel\n");
+      // std::puts(std::format("Skipping bc wrong channel. wanted {} got {}",
+      // sup.path.path[0], channel_id)
+      // .c_str());
       continue;
     }
     // valid thingy

@@ -5,7 +5,7 @@ public:
   FieldMapWidget(WidgetId id, std::string field_image_path);
 
   void ReceiveData(DataElement data) override;
-  void Draw() override;
+  void Draw(bool *) override;
 
 private:
   bool flipDiagonally;

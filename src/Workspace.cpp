@@ -124,8 +124,16 @@ void Draw() {
 
   ImGui::EndMainMenuBar();
 
+  std::vector<WidgetId> to_close{};
   for (auto [id, widget] : active_widgets) {
-    widget->Draw();
+    bool open = true;
+    widget->Draw(&open);
+    if (!open) {
+      to_close.push_back(widget->Id());
+    }
+  }
+  for (WidgetId id : to_close) {
+    CloseWidget(active_widgets[id]);
   }
 
   if (draw_plot_window) {
