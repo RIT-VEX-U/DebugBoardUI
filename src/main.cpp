@@ -46,8 +46,7 @@ int main() {
 
   // Main loop
   while (!Platform::shouldclose(pdata)) {
-    board->PollData();
-
+    Workspace::HandleData();
     Platform::prerender(pdata);
 
     Workspace::Draw();

@@ -113,8 +113,82 @@ void DebugBoard::HandleAdvertise(const json &json_obj) {
 }
 
 void DebugBoard::HandleData(const json &json_obj) {
+  std::vector<DataElement> updates = {};
+
   std::string ms = json_obj.dump();
-  // printf("Not advertise: %s\n", ms.c_str());
+  // printf("ms: %s\n", ms.c_str());
+
+  if (!json_obj.contains("channel_id") ||
+      !json_obj["channel_id"].is_number_unsigned()) {
+    printf("no channel id for packet: %s\n", ms.c_str());
+    return;
+  }
+  if (!json_obj.contains("data") || !json_obj["data"].is_object()) {
+    printf("Wrong type of data\n");
+    return;
+  }
+  size_t channel_id = json_obj["channel_id"];
+  json data = json_obj["data"];
+
+  std::string du = data.dump();
+  // printf("DU: %s\n", du.c_str());
+
+  for (const DataElementDescription &sup : current_channels) {
+    if (sup.path.path.size() < 1 ||
+        sup.path.path[0] != std::to_string(channel_id)) {
+      printf("Skipping bc wrong channel\n");
+      continue;
+    }
+    // valid thingy
+    std::string s = sup.path.toString();
+    // printf("Checking %s\n", s.c_str());
+    const std::vector<std::string> &path = sup.path.path;
+    json curr_node = data;
+    for (int path_idx = 1; path_idx < path.size(); path_idx++) {
+      auto d = curr_node.dump();
+      // printf("looking at %s\n", d.c_str());
+      if (curr_node.contains(path[path_idx])) {
+        curr_node = curr_node[path[path_idx]];
+        // printf("Following: %s\n", path[path_idx].c_str());
+      } else {
+        printf("Couldnt find %s\n", path[path_idx].c_str());
+        break;
+      }
+    }
+    // if we got here, we have followed the thing to its end and havent skipped
+    // curr_node is a data value
+    // printf("Found: %s of %s\n", curr_node.dump().c_str(),
+    //  curr_node.type_name());
+    DataLocator loc =
+        DataLocator{.source_name = Name(), .path = sup.path, .special = false};
+    if (sup.type_hint == DataPrimitiveType::Float) {
+      if (curr_node.is_number()) {
+        // we're good
+        double value = curr_node;
+        updates.push_back(DataElement{.path = loc, .value = value});
+
+      } else {
+        printf("Expected double at but got something else\n");
+      }
+
+    } else if (sup.type_hint == DataPrimitiveType::Int) {
+      printf("INT UNIMPLEMENTED" __FILE__ ":%d\n", __LINE__);
+    } else if (sup.type_hint == DataPrimitiveType::Uint) {
+      if (curr_node.is_number()) {
+        // we're good
+        size_t value = curr_node;
+        updates.push_back(DataElement{.path = loc, .value = value});
+
+      } else {
+        printf("Expected uint at but got something else\n");
+      }
+    } else {
+      printf("INLKNOWN PRIITIZVE TYPE\n");
+    }
+  }
+
+  unread_updates.push_back(
+      DataUpdate{.rx_time = Timestamp::clock::now(), .new_data = updates});
 }
 
 void DebugBoard::feedPacket(const json &json_obj) {
@@ -139,7 +213,7 @@ std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
 
   ws_->poll();
   ws_->dispatch([&](std::string msg) {
-    printf("Got: %s\n", msg.c_str());
+    // printf("Got: %s\n", msg.c_str());
     DebugBoard::feedPacket(msg);
   });
 

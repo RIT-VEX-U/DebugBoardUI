@@ -22,6 +22,29 @@ WidgetId NextWidgetId() {
   return widget_id_count;
 }
 
+void HandleData() {
+  std::vector<std::pair<std::string, DataUpdate>> updates{};
+  for (auto source : sources) {
+    std::vector<DataUpdate> src_updates = source->PollData();
+    for (auto up : src_updates) {
+      updates.push_back({source->Name(), up});
+    }
+  }
+  for (auto [key, widget] : active_widgets) {
+    for (DataLocator wanted : widget->WantedData()) {
+      for (auto up : updates) {
+        std::string src = up.first;
+        const DataUpdate &update = up.second;
+        for (auto specific_data : update.new_data) {
+          if (specific_data.path == wanted) {
+            widget->ReceiveData(specific_data);
+          }
+        }
+      }
+    }
+  }
+}
+
 void Demo_RealtimePlots();
 void Init() { AddWidgetsToCollection(reg); }
 
@@ -163,7 +186,7 @@ void Demo_RealtimePlots() {
 
 } // namespace Workspace
 
-std::string DataPath::toString() {
+std::string DataPath::toString() const {
   if (path.size() == 0) {
     return "";
   }
@@ -179,6 +202,10 @@ std::string DataLocator::toString() {
     return "(invalid location)";
   }
   return source_name + ":/" + path.toString();
+}
+
+bool DataLocator::operator==(const DataLocator &o) const {
+  return o.path == path && o.source_name == source_name && o.special == special;
 }
 
 bool DataPathMenu(DataLocator &current, std::string source_name,

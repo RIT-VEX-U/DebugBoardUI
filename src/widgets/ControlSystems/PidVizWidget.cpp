@@ -10,20 +10,36 @@ PidVizWidget::PidVizWidget(WidgetId id) : WidgetImpl(id), plot_error_(false) {
 PidVizWidget::~PidVizWidget() {}
 // void PidVizWidget::RegisterDataCallback() {}
 
-void PidVizWidget::ReceiveData() {}
+void PidVizWidget::ReceiveData(DataElement data) {
+  printf("%s ?= %s\n", data.path.toString().c_str(), sp_loc.toString());
+  if (data.path == sp_loc) {
+    t += 0.01;
+    double sp = std::get<double>(data.value);
+    printf("I got %s: %f\n", data.path.toString().c_str(), sp);
+    sdata.AddPoint(t, sp);
+  }
+}
 void PidVizWidget::Draw() {
 
-  t += 0.01;
   ImPlotAxisFlags flags =
       ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks;
 
-  sdata.AddPoint(t, sin(t));
   if (ImGui::Begin("Pid Visualizer")) {
+    bool modified = false;
+    modified |= DataLocationSelector("time", t_loc);
 
-    DataLocationSelector("time", t_loc);
-
-    DataLocationSelector("sp", sp_loc);
-    DataLocationSelector("pv", pv_loc);
+    modified |= DataLocationSelector("sp", sp_loc);
+    modified |= DataLocationSelector("pv", pv_loc);
+    bool any_bad = t_loc.isEmpty() || sp_loc.isEmpty() || pv_loc.isEmpty();
+    if (modified && !any_bad) {
+      printf("Registering new\n");
+      RegisterDataCallback({t_loc, sp_loc, pv_loc});
+    }
+    if (any_bad) {
+      ImGui::PushStyleColor(ImGuiCol_Text, {1, 0, 0, 1});
+      ImGui::Text("Some invalid data sources");
+      ImGui::PopStyleColor();
+    }
 
     ImGui::Checkbox("Plot error", &plot_error_);
     float history = 10.0;

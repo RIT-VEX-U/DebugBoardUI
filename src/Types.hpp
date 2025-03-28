@@ -9,7 +9,7 @@
 
 struct DataPath {
   std::vector<std::string> path;
-  std::string toString();
+  std::string toString() const;
 
   bool operator==(const DataPath &o) const {
     if (o.path.size() != path.size()) {
@@ -43,6 +43,7 @@ struct DataLocator {
 
   std::string toString();
   bool isEmpty();
+  bool operator==(const DataLocator &) const;
 };
 
 enum DataPrimitiveType {
@@ -62,7 +63,7 @@ struct DataElementDescription {
 };
 
 struct DataElement {
-  DataPath path;
+  DataLocator path;
   DataPrimitive value;
 };
 

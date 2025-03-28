@@ -1,4 +1,5 @@
 #pragma once
+#include "../Types.hpp"
 #include <functional>
 #include <memory>
 #include <string>
@@ -13,16 +14,17 @@ class WidgetImpl {
 public:
   WidgetImpl(WidgetId id);
   virtual ~WidgetImpl() {}
-  //   void RegisterDataCallback();
+  void RegisterDataCallback(std::vector<DataLocator> wanted_data);
 
-  virtual void ReceiveData() = 0;
+  virtual void ReceiveData(DataElement data) = 0;
   // Use ImGui to draw a this widget
   virtual void Draw() = 0;
 
   WidgetId Id();
 
+  std::vector<DataLocator> WantedData() const;
+
 private:
   WidgetId id_;
+  std::vector<DataLocator> wanted_data_;
 };
-
-
