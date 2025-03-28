@@ -5,6 +5,9 @@
 #include "platform/glue.hpp"
 #include <cstdio>
 #include <math.h>
+#ifdef _WIN32
+#include <winsock.h>
+#endif
 
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 namespace Platform {
