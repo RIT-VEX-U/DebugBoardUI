@@ -29,7 +29,7 @@ Data init(std::string window_title) {
   rc = WSAStartup(MAKEWORD(2, 2), &wsaData);
   if (rc) {
     printf("WSAStartup Failed.\n");
-    return 1;
+    return nullptr;
   }
 #endif
   // Setup window
