@@ -22,7 +22,7 @@ WidgetId NextWidgetId() {
   return widget_id_count;
 }
 
-void HandleData() {
+void RouteData() {
   std::vector<std::pair<std::string, DataUpdate>> updates{};
   for (auto source : sources) {
     std::vector<DataUpdate> src_updates = source->PollData();
@@ -227,12 +227,15 @@ bool DataLocationSelector(const char *name, DataLocator &current) {
   float winwidth = ImGui::GetWindowWidth();
   ImGui::TextUnformatted(name);
   float avail_width = winwidth - ImGui::GetCursorPosX();
-
+  float textwidth = ImGui::CalcTextSize(current_name.c_str()).x;
+  if (textwidth < avail_width) {
+    avail_width = textwidth;
+  }
   ImGui::SameLine();
   std::string child_name = std::string("## source selector ") + name;
   if (ImGui::BeginChild(
           child_name.c_str(),
-          ImVec2(avail_width / 3, ImGui::GetTextLineHeightWithSpacing()))) {
+          ImVec2(avail_width, ImGui::GetTextLineHeightWithSpacing()))) {
     if (ImGui::BeginMenu(current_name.c_str())) {
       for (std::shared_ptr<DataSource> src : Workspace::sources) {
         auto srcname = src->Name();

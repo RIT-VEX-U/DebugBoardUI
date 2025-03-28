@@ -8,5 +8,5 @@ void Draw();
 void OpenWidget(Widget widg);
 
 void AddSource(std::shared_ptr<DataSource>);
-void HandleData();
+void RouteData();
 } // namespace Workspace
