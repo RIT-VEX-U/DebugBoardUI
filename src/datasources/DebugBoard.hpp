@@ -13,6 +13,10 @@ class DebugBoard : public DataSource {
 public:
   DebugBoard();
   ~DebugBoard();
+
+  void HandleAdvertise(const json &json_obj);
+  void HandleData(const json &json_obj);
+
   std::vector<DataUpdate> PollData() override;
   DataElementSet ProvidedData() const override;
 
@@ -24,7 +28,7 @@ private:
   std::vector<DataUpdate> unread_updates;
 };
 
-class DebugBoardWebsocket : DebugBoard {
+class DebugBoardWebsocket : public DebugBoard {
 public:
   using TimeDuration = std::chrono::duration<int64_t>;
 

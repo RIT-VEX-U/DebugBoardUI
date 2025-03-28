@@ -15,9 +15,9 @@ class DumbDataSource : public DataSource {
 public:
   DumbDataSource() noexcept {
     dats.insert(DataElementDescription{.path = {{"Voltage"}},
-                                       .type_hint = DataPrimitiveType::Double});
+                                       .type_hint = DataPrimitiveType::Float});
     dats.insert(DataElementDescription{.path = {{"Current"}},
-                                       .type_hint = DataPrimitiveType::Double});
+                                       .type_hint = DataPrimitiveType::Float});
   }
   ~DumbDataSource() {}
   /// a human readable name describing this data source
@@ -36,15 +36,17 @@ private:
 };
 
 int main() {
-  DebugBoardWebsocket board{"ws://localhost:8080/ws"};
+  // auto board =
+  // std::make_shared<DebugBoardWebsocket>("ws://localhost:8080/ws");
+  auto board = std::make_shared<DebugBoardWebsocket>("ws://129.21.144.84/ws");
   Workspace::Init();
-  Workspace::AddSource(std::make_shared<DumbDataSource>());
+  Workspace::AddSource(board);
 
   Platform::Data pdata = Platform::init("Debug Board UI");
 
   // Main loop
   while (!Platform::shouldclose(pdata)) {
-    board.PollData();
+    board->PollData();
 
     Platform::prerender(pdata);
 

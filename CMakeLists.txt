@@ -17,8 +17,10 @@ project (
 	
 	## Create main executable
 add_executable(DebugBoardUI)
-# target_compile_definitions(DebugBoardUI PRIVATE ImDrawIdx=\"unsigned int\")
 target_compile_definitions(DebugBoardUI PRIVATE IMGUI_USER_CONFIG="imgui_config.h")
+
+target_compile_options(DebugBoardUI PUBLIC -fsanitize=address)
+target_link_options(DebugBoardUI PUBLIC -fsanitize=address)
 
 target_include_directories(
 	DebugBoardUI

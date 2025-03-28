@@ -27,7 +27,7 @@ import (
 			"channelId": 0,
 			"schema": {
 				"name": "asdf",
-				"type": "struct",
+				"type": "record",
 				"fields": []
 			}
 		}
@@ -50,7 +50,7 @@ func (s StructSchema) MarshalJSON() ([]byte, error) {
 		Type   string   `json:"type"`
 		Fields []Schema `json:"fields"`
 	}
-	var w = Wrapper{s.Name, "struct", s.Fields}
+	var w = Wrapper{s.Name, "record", s.Fields}
 	return json.Marshal(w)
 }
 

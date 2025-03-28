@@ -47,7 +47,7 @@ struct DataLocator {
 
 enum DataPrimitiveType {
   String,
-  Double,
+  Float,
   Int,
   Uint,
 };
