@@ -19,6 +19,16 @@ struct GLFWPlatformData {
 };
 
 Data init(std::string window_title) {
+#ifdef _WIN32
+  INT rc;
+  WSADATA wsaData;
+
+  rc = WSAStartup(MAKEWORD(2, 2), &wsaData);
+  if (rc) {
+    printf("WSAStartup Failed.\n");
+    return 1;
+  }
+#endif
   // Setup window
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {
@@ -155,6 +165,10 @@ void cleanup(Data pdata) {
   glfwDestroyWindow(data->window);
   glfwTerminate();
   delete data;
+
+#ifdef _WIN32
+  WSACleanup();
+#endif
 }
 
 bool shouldclose(Data pdata) {
