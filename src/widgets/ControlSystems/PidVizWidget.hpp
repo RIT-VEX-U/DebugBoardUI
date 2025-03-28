@@ -2,6 +2,7 @@
 #include "../Types.hpp"
 #include "GraphUtils.hpp"
 #include "Widget.hpp"
+#include "imgui.h"
 class PidVizWidget : public WidgetImpl {
 public:
   PidVizWidget(WidgetId id);
@@ -18,6 +19,5 @@ private:
 
   bool plot_error_;
   double t;
-  ScrollingBuffer sdata;
-  RollingBuffer rdata;
+  ScrollingBuffer<ImVec2> sdata;
 };

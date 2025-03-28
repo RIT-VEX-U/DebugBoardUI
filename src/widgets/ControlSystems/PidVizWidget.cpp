@@ -16,7 +16,7 @@ void PidVizWidget::ReceiveData(DataElement data) {
     t += 0.01;
     double sp = std::get<double>(data.value);
     // printf("I got %s: %f\n", data.path.toString().c_str(), sp);
-    sdata.AddPoint(t, sp);
+    sdata.AddPoint(ImVec2{t, sp});
   }
 }
 void PidVizWidget::Draw(bool *should_close) {

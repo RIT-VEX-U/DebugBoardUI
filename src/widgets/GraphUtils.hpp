@@ -1,24 +1,52 @@
 #pragma once
-#include "imgui.h"
+
+#include <vector>
 
 // utility structure for realtime plot
-class ScrollingBuffer {
+template <typename ElementType> class ScrollingBuffer {
 public:
+  using value_type = ElementType;
   int MaxSize;
   int Offset;
-  ImVector<ImVec2> Data;
+  std::vector<value_type> Data;
 
-  ScrollingBuffer(int max_size = 2000);
-  void AddPoint(float x, float y);
-  void Erase();
+  ScrollingBuffer(int max_size = 2000) {
+    MaxSize = max_size;
+    Offset = 0;
+    Data.reserve(MaxSize);
+  }
+  void AddPoint(value_type y) {
+    if (Data.size() < MaxSize)
+      Data.push_back(y);
+    else {
+      Data[Offset] = y;
+      Offset = (Offset + 1) % MaxSize;
+    }
+  }
+  void Erase() {
+    if (Data.size() > 0) {
+      Data.shrink(0);
+      Offset = 0;
+    }
+  }
 };
 
 // utility structure for realtime plot
-struct RollingBuffer {
+template <typename ElementType> struct RollingBuffer {
 public:
-  float Span;
-  ImVector<ImVec2> Data;
+  using value_type = ElementType;
+  size_t MaxSize;
+  ;
+  std::vector<value_type> Data;
 
-  RollingBuffer();
-  void AddPoint(float x, float y);
+  RollingBuffer(size_t max_size = 2000) {
+    MaxSize = max_size;
+    Data.reserve(MaxSize);
+  }
+  void AddPoint(value_type val) {
+    if (Data.size() == MaxSize) {
+      Data.resize(0);
+    }
+    Data.push_back(val);
+  }
 };

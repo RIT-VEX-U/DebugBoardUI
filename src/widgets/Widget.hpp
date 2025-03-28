@@ -14,7 +14,6 @@ class WidgetImpl {
 public:
   WidgetImpl(WidgetId id);
   virtual ~WidgetImpl() {}
-  void RegisterDataCallback(std::vector<DataLocator> wanted_data);
 
   virtual void ReceiveData(DataElement data) = 0;
   // Use ImGui to draw a this widget
@@ -23,6 +22,9 @@ public:
   WidgetId Id();
 
   std::vector<DataLocator> WantedData() const;
+
+protected:
+  void RegisterDataCallback(std::vector<DataLocator> wanted_data);
 
 private:
   WidgetId id_;

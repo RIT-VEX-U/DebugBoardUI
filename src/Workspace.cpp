@@ -150,20 +150,20 @@ void Demo_RealtimePlots() {
   ImGui::BulletText("Move your mouse to change the data!");
   ImGui::BulletText(
       "This example assumes 60 FPS. Higher FPS requires larger buffer size.");
-  static ScrollingBuffer sdata1, sdata2;
-  static RollingBuffer rdata1, rdata2;
+  static ScrollingBuffer<ImVec2> sdata1, sdata2;
+  static RollingBuffer<ImVec2> rdata1, rdata2;
   ImVec2 mouse = ImGui::GetMousePos();
   static float t = 0;
   t += ImGui::GetIO().DeltaTime;
-  sdata1.AddPoint(t, mouse.x * 0.0005f);
-  rdata1.AddPoint(t, mouse.x * 0.0005f);
-  sdata2.AddPoint(t, mouse.y * 0.0005f);
-  rdata2.AddPoint(t, mouse.y * 0.0005f);
+  sdata1.AddPoint(ImVec2{t, mouse.x * 0.0005f});
+  rdata1.AddPoint(ImVec2{t, mouse.x * 0.0005f});
+  sdata2.AddPoint(ImVec2{t, mouse.y * 0.0005f});
+  rdata2.AddPoint(ImVec2{t, mouse.y * 0.0005f});
 
   static float history = 10.0f;
   ImGui::SliderFloat("History", &history, 1, 30, "%.1f s");
-  rdata1.Span = history;
-  rdata2.Span = history;
+  // rdata1.Span = history;
+  // rdata2.Span = history;
 
   static ImPlotAxisFlags flags =
       ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks;

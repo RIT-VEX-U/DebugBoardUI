@@ -13,8 +13,8 @@ target_include_directories(Widgets PUBLIC ./)
 target_sources(Widgets PRIVATE 
     ControlSystems/PidVizWidget.cpp
     Visualization/FieldMapWidget.cpp
+    Visualization/GenericGrapher.cpp
     Widget.cpp
     WidgetRegistry.cpp
     RegisteredWidgets.cpp
-    GraphUtils.cpp
 )
