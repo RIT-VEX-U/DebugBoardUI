@@ -16,3 +16,6 @@
 [submodule "vendor/glfw"]
 	path = vendor/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "vendor/eigen"]
+	path = vendor/eigen
+	url = https://gitlab.com/libeigen/eigen.git
