@@ -7,7 +7,11 @@ project (
 
 add_library(Widgets)
 
-target_include_directories(Widgets PRIVATE ${CMAKE_SOURCE_DIR}/vendor/imgui/ ${CMAKE_SOURCE_DIR}/vendor)
+# theres gotta be a better way to do this
+target_include_directories(Widgets PRIVATE 
+    ${CMAKE_SOURCE_DIR}/vendor/imgui/ 
+    ${CMAKE_SOURCE_DIR}/vendor
+    ${CMAKE_SOURCE_DIR}/vendor/eigen)
 target_include_directories(Widgets PUBLIC ./)
 
 target_sources(Widgets PRIVATE 

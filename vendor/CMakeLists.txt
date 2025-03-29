@@ -14,6 +14,9 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(json)
 target_link_libraries(VendorDeps PUBLIC nlohmann_json::nlohmann_json)
 
+# Eigen ----------------------------------------------------
+add_subdirectory(eigen)
+
 # GLFW ----------------------------------------------------
 add_subdirectory(glfw)
 
