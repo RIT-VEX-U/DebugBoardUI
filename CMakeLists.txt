@@ -24,6 +24,7 @@ target_compile_definitions(DebugBoardUI PRIVATE IMGUI_USER_CONFIG="imgui_config.
 if (UNIX)
 	target_compile_options(DebugBoardUI PUBLIC -fsanitize=address)
 	target_link_options(DebugBoardUI PUBLIC -fsanitize=address)
+	target_compile_options(DebugBoardUI PRIVATE -Wnarrowing)
 endif (UNIX)
 
 
