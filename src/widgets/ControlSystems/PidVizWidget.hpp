@@ -12,11 +12,11 @@ public:
   void Draw(bool *should_close) override;
 
 private:
-  DataLocator t_loc;
-  DataLocator sp_loc;
-  DataLocator pv_loc;
+  DataLocator t_loc_;
+  DataLocator sp_loc_;
+  DataLocator pv_loc_;
 
   bool plot_error_;
-  double t;
-  ScrollingBuffer<ImVec2> sdata;
+  double t_;
+  ScrollingBuffer<ImVec2> sdata_;
 };

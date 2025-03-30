@@ -9,7 +9,7 @@ using Data = void *;
  * @param window_title the title of the OS window
  * @return platform data. Keep this and pass it in to further Platform functions
  */
-Data init(std::string window_title);
+Data init(const std::string &window_title);
 /**
  * Called before beginning rendering for a given iteration of the game loop
  * Prepares for ImGui functions to be called

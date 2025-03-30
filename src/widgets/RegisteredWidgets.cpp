@@ -3,6 +3,7 @@
 #include "Visualization/GenericGrapher.hpp"
 #include "Widget.hpp"
 #include "WidgetRegistry.hpp"
+#include <memory>
 
 // Add your widgets here
 void AddWidgetsToCollection(WidgetRegistry &reg) {

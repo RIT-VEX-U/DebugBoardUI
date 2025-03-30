@@ -10,9 +10,7 @@ public:
   int Offset;
   std::vector<value_type> Data;
 
-  explicit ScrollingBuffer(int max_size = 2000) {
-    MaxSize = max_size;
-    Offset = 0;
+  explicit ScrollingBuffer(int max_size = 2000) : MaxSize(max_size), Offset(0) {
     Data.reserve(MaxSize);
   }
   void AddPoint(const value_type &y) {
@@ -24,7 +22,7 @@ public:
     }
   }
   void Erase() {
-    if (Data.size() > 0) {
+    if (!Data.empty()) {
       Data.shrink(0);
       Offset = 0;
     }
@@ -36,7 +34,7 @@ template <typename ElementType> struct RollingBuffer {
 public:
   using value_type = ElementType;
   size_t MaxSize;
-  ;
+
   std::vector<value_type> Data;
 
   explicit RollingBuffer(size_t max_size = 2000) : MaxSize(max_size) {

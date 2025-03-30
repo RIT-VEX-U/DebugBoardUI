@@ -1,12 +1,26 @@
 #include "datasources/DebugBoard.hpp"
+#include "Types.hpp"
+#include "easywsclient/easywsclient.hpp"
 #include "imgui.h"
+#include "nlohmann/json_fwd.hpp"
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <exception>
+#include <format>
+#include <functional>
+#include <optional>
 #include <print>
+#include <string>
+#include <utility>
+#include <vector>
 
 using json = nlohmann::json;
 
-DebugBoard::DebugBoard() {}
+DebugBoard::DebugBoard() = default;
 
-DebugBoard::~DebugBoard() {}
+DebugBoard::~DebugBoard() = default;
 
 std::vector<DataUpdate> DebugBoard::PollData() {
   std::vector<DataUpdate> updates{};
@@ -19,39 +33,38 @@ DebugBoard::DataElementSet DebugBoard::ProvidedData() const {
   return current_channels;
 }
 void DebugBoard::feedPacket(const std::string &json_obj) {
-  try {
-    json data = json::parse(json_obj);
-    feedPacket(data);
-  } catch (const std::exception &e) {
-    std::println("Failed to parse json: {}", e.what());
-  }
+    try {
+        json const data = json::parse(json_obj);
+        feedPacket(data);
+    } catch (const std::exception &e) {
+        std::println("Failed to parse json: {}", e.what());
+    }
 }
 
-bool isAdvertise(const json &obj) {
+static bool isAdvertise(const json &obj) {
   if (!obj.contains("type")) {
-    return false;
+      return false;
   }
   return obj["type"] == "advertisement";
 }
 
-bool isData(const json &obj) {
+static bool isData(const json &obj) {
   if (!obj.contains("type")) {
     return false;
   }
   return obj["type"] == "data";
 }
 
-void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
-
-  if (!chan_j.contains("channel_id") || !chan_j.contains("schema")) {
-    std::puts("Bad Channel");
-    return;
-  }
+static void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
+    if (!chan_j.contains("channel_id") || !chan_j.contains("schema")) {
+        std::puts("Bad Channel");
+        return;
+    }
   if (!chan_j["channel_id"].is_number_integer()) {
     std::puts("Bad channel ud");
     return;
   }
-  int chan_id = chan_j["channel_id"];
+  int const chan_id = chan_j["channel_id"];
 
   std::function<void(const std::vector<std::string> &path_so_far,
                      const json &o)>
@@ -63,11 +76,11 @@ void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
       return;
     }
     if (!o["name"].is_string() || !o["type"].is_string()) {
-      // bad types
-      std::println("bad types");
-      return;
+        // bad types
+        std::println("bad types");
+        return;
     }
-    std::string name = o["name"];
+    std::string const name = o["name"];
     std::string valType = o["type"];
     std::vector<std::string> path = path_so_far;
     path.push_back(name);
@@ -121,61 +134,60 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
     return DataError{"Missing 'channel_id' or 'channel_id' wasn't number"};
   }
   if (!json_obj.contains("data") || !json_obj["data"].is_object()) {
-    return DataError{"Missing 'data' or 'data' wasn't an object"};
+      return DataError{"Missing 'data' or 'data' wasn't an object"};
   }
-  size_t channel_id = json_obj["channel_id"];
-  json data = json_obj["data"];
+  size_t const channel_id = json_obj["channel_id"];
+  const json &data = json_obj["data"];
 
   for (const DataElementDescription &sup : current_channels) {
-    if (sup.path.parts.size() < 1 ||
-        sup.path.parts[0] != std::to_string(channel_id)) {
-      continue;
-    }
-
-    const std::vector<std::string> &path = sup.path.parts;
-    json curr_node = data;
-    for (int path_idx = 1; path_idx < path.size(); path_idx++) {
-      auto d = curr_node.dump();
-      if (curr_node.contains(path[path_idx])) {
-        curr_node = curr_node[path[path_idx]];
-      } else {
-        std::println("Couldnt find {}", path[path_idx]);
-        break;
-      }
-    }
-    // if we got here, we have followed the thing to its end and havent skipped
-    // curr_node is a data value
-
-    DataLocator loc =
-        DataLocator{.source_name = Name(), .path = sup.path, .special = false};
-    if (sup.type_hint == DataPrimitiveType::Float) {
-      if (curr_node.is_number()) {
-        // we're good
-        double value = curr_node;
-        updates.push_back(DataElement{.path = loc, .value = value});
-
-      } else {
-        std::println("{}", curr_node.dump());
-        std::println("Expected double at but got something else");
+      if (sup.path.parts.empty() || sup.path.parts[0] != std::to_string(channel_id)) {
+          continue;
       }
 
-    } else if (sup.type_hint == DataPrimitiveType::Int) {
-      std::println("INT UNIMPLEMENTED {}:{}", __FILE__, __LINE__);
-      return DataError{"INT Handler unimplemented"};
-    } else if (sup.type_hint == DataPrimitiveType::Uint) {
-      if (curr_node.is_number()) {
-        // we're good
-        size_t value = curr_node;
-        updates.push_back(DataElement{.path = loc, .value = (uint64_t)value});
-
-      } else {
-        std::println("Expected uint at but got something else\n");
-        return DataError{std::format("Expected a Uint at '{}' but got {}",
-                                     sup.path.toString(), curr_node.dump())};
+      const std::vector<std::string> &path = sup.path.parts;
+      json curr_node = data;
+      for (int path_idx = 1; path_idx < path.size(); path_idx++) {
+          auto d = curr_node.dump();
+          if (curr_node.contains(path[path_idx])) {
+              curr_node = curr_node[path[path_idx]];
+          } else {
+              std::println("Couldnt find {}", path[path_idx]);
+              break;
+          }
       }
-    } else {
-      std::println("INLKNOWN PRIITIZVE TYPE\n");
-    }
+      // if we got here, we have followed the thing to its end and havent skipped
+      // curr_node is a data value
+
+      DataLocator const loc = DataLocator{.source_name = Name(), .path = sup.path, .special = false};
+      if (sup.type_hint == DataPrimitiveType::Float) {
+          if (curr_node.is_number()) {
+              // we're good
+              double value = curr_node;
+              updates.push_back(DataElement{.path = loc, .value = value});
+
+          } else {
+              std::println("{}", curr_node.dump());
+              std::println("Expected double at but got something else");
+          }
+
+      } else if (sup.type_hint == DataPrimitiveType::Int) {
+          std::println("INT UNIMPLEMENTED {}:{}", __FILE__, __LINE__);
+          return DataError{"INT Handler unimplemented"};
+      } else if (sup.type_hint == DataPrimitiveType::Uint) {
+          if (curr_node.is_number()) {
+              // we're good
+              size_t value = curr_node;
+              updates.push_back(DataElement{.path = loc, .value = (uint64_t) value});
+
+          } else {
+              std::println("Expected uint at but got something else\n");
+              return DataError{std::format("Expected a Uint at '{}' but got {}",
+                                           sup.path.toString(),
+                                           curr_node.dump())};
+          }
+      } else {
+          std::println("INLKNOWN PRIITIZVE TYPE\n");
+      }
   }
 
   unread_updates.push_back(
@@ -196,10 +208,11 @@ void DebugBoard::feedPacket(const json &json_obj) {
   }
 }
 
-DebugBoardWebsocket::DebugBoardWebsocket(const std::string &ws_url,
-                                         TimeDuration retry_period)
-    : ws_url_(ws_url), ws_(easywsclient::WebSocket::from_url(ws_url)) {
-  last_connect_time_ = std::chrono::steady_clock::now();
+DebugBoardWebsocket::DebugBoardWebsocket(const std::string &ws_url, TimeDuration /*retry_period*/)
+    : ws_url_(ws_url)
+    , ws_(easywsclient::WebSocket::from_url(ws_url))
+{
+    last_connect_time_ = std::chrono::steady_clock::now();
 }
 
 std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
@@ -209,11 +222,11 @@ std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
   }
 
   ws_->poll();
-  ws_->dispatch([&](std::string msg) { DebugBoard::feedPacket(msg); });
+  ws_->dispatch([&](const std::string &msg) { DebugBoard::feedPacket(msg); });
 
   return DebugBoard::PollData();
 }
 
 std::string DebugBoardWebsocket::Name() const { return "VDB@" + ws_url_; }
 
-void DebugBoardWebsocket::Draw() {}
+void DebugBoardWebsocket::Draw() { ImGui::Text("asdf\n"); }

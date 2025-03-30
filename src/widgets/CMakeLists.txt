@@ -18,6 +18,9 @@ target_sources(Widgets PRIVATE
     ControlSystems/PidVizWidget.cpp
     Visualization/FieldMapWidget.cpp
     Visualization/GenericGrapher.cpp
+    ControlSystems/PidVizWidget.hpp
+    Visualization/FieldMapWidget.hpp
+    Visualization/GenericGrapher.hpp
     Widget.cpp
     WidgetRegistry.cpp
     RegisteredWidgets.cpp

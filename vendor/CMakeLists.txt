@@ -58,4 +58,6 @@ target_sources(VendorDeps PRIVATE
     implot/implot_items.cpp
 
     easywsclient/easywsclient.cpp
+
+    stb/stb_image.c
 )

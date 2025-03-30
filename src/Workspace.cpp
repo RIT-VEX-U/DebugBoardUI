@@ -1,69 +1,82 @@
 #include "Workspace.hpp"
 #include "Types.hpp"
+#include "Widget.hpp"
 #include "imgui.h"
 #include "implot/implot.h"
-#include "math.h"
-#include "widgets/GraphUtils.hpp"
 #include "widgets/WidgetRegistry.hpp"
-#include <map>
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 namespace Workspace {
-WidgetRegistry reg;
-std::vector<std::shared_ptr<DataSource>> sources = {};
+static WidgetRegistry reg;
+static std::vector<std::shared_ptr<DataSource>> sources = {};
 
-void AddSource(std::shared_ptr<DataSource> src) { sources.push_back(src); }
+void AddSource(const std::shared_ptr<DataSource> &src)
+{
+    sources.push_back(src);
+}
 
-bool draw_plot_window = false;
-bool draw_demo_window = false;
+static bool draw_plot_window = false;
+static bool draw_demo_window = false;
 
 static std::unordered_map<WidgetId, Widget> active_widgets = {};
 static WidgetId widget_id_count = 0;
-WidgetId NextWidgetId() {
+static WidgetId NextWidgetId() {
   widget_id_count++;
   return widget_id_count;
 }
 
 void RouteData() {
-  std::vector<std::pair<std::string, DataUpdate>> updates{};
-  for (auto source : sources) {
-    std::vector<DataUpdate> src_updates = source->PollData();
-    for (auto up : src_updates) {
-      updates.push_back({source->Name(), up});
-    }
-  }
-
-  for (auto [key, widget] : active_widgets) {
-    for (const DataLocator &wanted : widget->WantedData()) {
-      for (auto up : updates) {
-        const DataUpdate &update = up.second;
-        for (auto specific_data : update.new_data) {
-          if (specific_data.path == wanted) {
-            widget->ReceiveData(specific_data);
-          }
+    std::vector<std::pair<std::string, DataUpdate>> updates{};
+    for (const auto &source : sources) {
+        std::vector<DataUpdate> const src_updates = source->PollData();
+        for (const auto &up : src_updates) {
+            updates.emplace_back(source->Name(), up);
         }
-      }
     }
+
+  for (const auto& [key, widget] : active_widgets) {
+      for (const DataLocator &wanted : widget->WantedData()) {
+          for (const std::pair<std::string, DataUpdate> &name_and_up : updates) {
+              const DataUpdate &update = name_and_up.second;
+              for (const auto &specific_data : update.new_data) {
+                  if (specific_data.path == wanted) {
+                      widget->ReceiveData(specific_data);
+                  }
+              }
+          }
+      }
   }
 }
 
-void Init() { AddWidgetsToCollection(reg); }
-
-void OpenWidget(DefaultWidgetCreator widg_maker) {
-  WidgetId nextId = NextWidgetId();
-  Widget widg = widg_maker(nextId);
-
-  active_widgets[nextId] = widg;
-}
-void CloseWidget(Widget widg) {
-  WidgetId id = widg->Id();
-  active_widgets.erase(id);
+void Init()
+{
+    AddWidgetsToCollection(reg);
 }
 
-void DrawNewWidgetUI() {
+static void OpenWidget(const DefaultWidgetCreator &widg_maker)
+{
+    WidgetId const nextId = NextWidgetId();
+    Widget const widg = widg_maker(nextId);
+
+    active_widgets[nextId] = widg;
+}
+static void CloseWidget(const Widget &widg)
+{
+    WidgetId const id = widg->Id();
+    active_widgets.erase(id);
+}
+
+static void DrawNewWidgetUI() {
   static ImGuiTextFilter filter;
 
   ImGui::Begin("New Widget");
   filter.Draw();
-  for (auto [key, val] : reg) {
+  for (const auto& [key, val] : reg) {
     if (filter.PassFilter(key.c_str())) {
       if (ImGui::Button(key.c_str())) {
         OpenWidget(val);
@@ -72,7 +85,7 @@ void DrawNewWidgetUI() {
   }
   ImGui::End();
 }
-void DrawMenuBar() {
+static void DrawMenuBar() {
   ImGui::BeginMainMenuBar();
   {
     {
@@ -95,7 +108,7 @@ void DrawMenuBar() {
   }
 }
 
-void DrawNewDatasourceUI() {
+static void DrawNewDatasourceUI() {
   if (ImGui::Begin("Datasources")) {
     if (ImGui::CollapsingHeader("New Source", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::Button("Debug Board");
@@ -107,99 +120,94 @@ void DrawNewDatasourceUI() {
   ImGui::End();
 }
 
-void Draw() {
-  auto vp = ImGui::GetMainViewport();
-  ImGuiID imid = 0;
-  ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(imid, vp);
-  (void)dockspace_id;
-  DrawMenuBar();
+void Draw()
+{
+    DrawMenuBar();
 
-  DrawNewWidgetUI();
-  DrawNewDatasourceUI();
-  for (auto source : sources) {
-    source->Draw();
-  }
-
-  ImGui::EndMainMenuBar();
-
-  std::vector<WidgetId> to_close{};
-  for (auto [id, widget] : active_widgets) {
-    bool open = true;
-    widget->Draw(&open);
-    if (!open) {
-      to_close.push_back(widget->Id());
+    DrawNewWidgetUI();
+    DrawNewDatasourceUI();
+    for (const auto &source : sources) {
+        source->Draw();
     }
-  }
-  for (WidgetId id : to_close) {
-    CloseWidget(active_widgets[id]);
-  }
 
-  if (draw_plot_window) {
-    ImPlot::ShowDemoWindow(&draw_plot_window);
-  }
-  if (draw_demo_window) {
-    ImGui::ShowDemoWindow(&draw_demo_window);
-  }
+    ImGui::EndMainMenuBar();
+
+    std::vector<WidgetId> to_close{};
+    for (const auto &[id, widget] : active_widgets) {
+        bool open = true;
+        widget->Draw(&open);
+        if (!open) {
+            to_close.push_back(widget->Id());
+        }
+    }
+    for (WidgetId const id : to_close) {
+        CloseWidget(active_widgets[id]);
+    }
+
+    if (draw_plot_window) {
+        ImPlot::ShowDemoWindow(&draw_plot_window);
+    }
+    if (draw_demo_window) {
+        ImGui::ShowDemoWindow(&draw_demo_window);
+    }
 }
 
 } // namespace Workspace
 
-bool DataPathMenu(DataLocator &current, const std::string &source_name,
-                  std::shared_ptr<DataSource> source) {
-  DataSource::DataElementSet chans = source->ProvidedData();
+static bool DataPathMenu(DataLocator &current,
+                         const std::string &source_name,
+                         const std::shared_ptr<DataSource> &source)
+{
+    DataSource::DataElementSet const chans = source->ProvidedData();
 
-  if (ImGui::MenuItem("receive time")) {
-    current.source_name = source_name;
-    current.path = {{"recv_time"}};
-    current.special = true;
-  }
-  ImGui::Separator();
-
-  for (const DataElementDescription &chan : chans) {
-    auto str = chan.path.toString();
-    bool youSelected =
-        current.path == chan.path && current.source_name == source_name;
-    if (ImGui::MenuItem(str.c_str(), nullptr, &youSelected)) {
-      current.path = chan.path;
-      current.source_name = source_name;
-      current.special = false;
-      return true;
+    if (ImGui::MenuItem("receive time")) {
+        current.source_name = source_name;
+        current.path = {{"recv_time"}};
+        current.special = true;
     }
-  }
-  return false;
+    ImGui::Separator();
+
+    for (const DataElementDescription &chan : chans) {
+        auto str = chan.path.toString();
+        bool youSelected = current.path == chan.path && current.source_name == source_name;
+        if (ImGui::MenuItem(str.c_str(), nullptr, &youSelected)) {
+            current.path = chan.path;
+            current.source_name = source_name;
+            current.special = false;
+            return true;
+        }
+    }
+    return false;
 }
 
-bool DataLocationSelector(const char *name, DataLocator &current) {
+bool DataLocationSelector(const char *name, DataLocator &current)
+{
+    std::string const current_name = current.toString();
+    bool changed = false;
 
-  std::string current_name = current.toString();
-  bool changed = false;
-
-  float winwidth = ImGui::GetWindowWidth();
-  ImGui::TextUnformatted(name);
-  float avail_width = winwidth - ImGui::GetCursorPosX();
-  float textwidth = ImGui::CalcTextSize(current_name.c_str()).x;
-  if (textwidth < avail_width) {
-    avail_width = textwidth;
-  }
-  ImGui::SameLine();
-  std::string child_name = std::string("## source selector ") + name;
-  if (ImGui::BeginChild(
-          child_name.c_str(),
-          ImVec2(avail_width, ImGui::GetTextLineHeightWithSpacing()))) {
-    if (ImGui::BeginMenu(current_name.c_str())) {
-      for (std::shared_ptr<DataSource> src : Workspace::sources) {
-        auto srcname = src->Name();
-        if (ImGui::BeginMenu(srcname.c_str())) {
-          if (DataPathMenu(current, srcname, src)) {
-            changed = true;
-          }
-          ImGui::EndMenu();
+    float const winwidth = ImGui::GetWindowWidth();
+    ImGui::TextUnformatted(name);
+    float avail_width = winwidth - ImGui::GetCursorPosX();
+    float const textwidth = ImGui::CalcTextSize(current_name.c_str()).x;
+    avail_width = std::min(textwidth, avail_width);
+    ImGui::SameLine();
+    std::string const child_name = std::string("## source selector ") + name;
+    if (ImGui::BeginChild(child_name.c_str(),
+                          ImVec2(avail_width, ImGui::GetTextLineHeightWithSpacing()))) {
+        if (ImGui::BeginMenu(current_name.c_str())) {
+            for (const std::shared_ptr<DataSource> &src : Workspace::sources) {
+                auto srcname = src->Name();
+                if (ImGui::BeginMenu(srcname.c_str())) {
+                    if (DataPathMenu(current, srcname, src)) {
+                        changed = true;
+                    }
+                    ImGui::EndMenu();
+                }
+            }
+            ImGui::EndMenu();
         }
-      }
-      ImGui::EndMenu();
     }
-  }
-  ImGui::EndChild();
+    ImGui::EndChild();
 
-  return changed;
+    return changed;
 }

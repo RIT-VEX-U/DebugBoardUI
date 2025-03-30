@@ -15,6 +15,8 @@ Checks: "*,
         -misc-non-private-member-variables-in-classes,
         -hicpp-uppercase-literal-suffix,readability-uppercase-literal-suffix,
         readability-identifier-naming,
+        -cppcoreguidelines-pro-type-vararg,  #ImGui::Text is vararg
+
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
@@ -22,6 +24,7 @@ FormatStyle:     none
 
 CheckOptions:
   - { key: readability-identifier-naming.ClassCase,             value: CamelCase  }
-  - { key: readability-identifier-naming.ClassMemberCase,       value: lower_case         }
-  - { key: readability-identifier-naming.ClassMemberSuffix,     value: _  }
+  - { key: readability-identifier-naming.PrivateMemberCase,       value: lower_case         }
+  - { key: readability-identifier-naming.PrivateMemberSuffix,     value: _  }
+  - { key: hicpp-signed-bitwise.IgnorePositiveIntegerLiterals, value: true}
 

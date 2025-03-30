@@ -1,10 +1,14 @@
 #include "WidgetRegistry.hpp"
+#include "Widget.hpp"
+#include <string>
 
-WidgetRegistry::WidgetRegistry() {}
+#include <utility>
+
+WidgetRegistry::WidgetRegistry() = default;
 
 void WidgetRegistry::RegisterWidget(const std::string &name,
                                     DefaultWidgetCreator creator) {
-  registered_widgets[name] = creator;
+    registered_widgets[name] = std::move(creator);
 }
 
 WidgetRegistry::MapType::iterator WidgetRegistry::begin() {

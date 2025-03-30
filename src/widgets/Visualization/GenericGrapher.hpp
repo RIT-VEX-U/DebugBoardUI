@@ -2,7 +2,7 @@
 #include "Widget.hpp"
 #include <chrono>
 
-class GenericGrapher : public WidgetImpl {
+class GenericGrapher final : public WidgetImpl {
 public:
   struct AxisData {
     bool secondary_y = false;
@@ -15,8 +15,8 @@ public:
   void Draw(bool *should_close) override;
 
 private:
-  std::chrono::seconds most_recent_time;
-  DataLocator time_loc;
-  std::vector<AxisData> data;
-  ScrollingBuffer<float> time;
+  std::chrono::seconds most_recent_time_;
+  DataLocator time_loc_;
+  std::vector<AxisData> data_;
+  ScrollingBuffer<float> time_;
 };

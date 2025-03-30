@@ -4,26 +4,49 @@
 #include "implot/implot.h"
 #include "implot/implot_internal.h"
 #include "platform/glue.hpp"
+#include <GL/gl.h>
 #include <cstdio>
 #include <format>
+#include "stb/stb_image.h"
+
 #ifdef _WIN32
 #include <winsock.h>
 #endif
 
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 namespace Platform {
-void glfw_error_callback(int error, const char *description) {
-  std::fputs(std::format("GLFW Error {}: {}", error, description).c_str(),
+static void glfw_error_callback(int error, const char *description) {
+  (void)std::fputs(std::format("GLFW Error {}: {}", error, description).c_str(),
              stderr);
 }
 
 struct GLFWPlatformData {
-  GLFWwindow *window;
-  ImVec4 clear_color;
-  ImGuiIO &io;
+    GLFWwindow *window{};
+    ImVec4 clear_color;
+    ImGuiIO &io;
 };
 
-Data init(std::string window_title) {
+
+static void set_window_icon(GLFWwindow *window){
+    int width, height, channels = 0;
+    unsigned char* pixels = stbi_load("/home/unknown/Clubs/VEX/Code/DebugBoardUI/assets/RealLogo.jpg.png.png", &width, &height, &channels, 4); // Force 4 channels (RGBA)
+    if (!pixels) {
+        // Handle error loading image
+        return;
+    }
+
+    GLFWimage icon;
+    icon.width = width;
+    icon.height = height;
+    icon.pixels = pixels;
+
+    glfwSetWindowIcon(window, 1, &icon); // 1 is the number of images in the array
+
+    stbi_image_free(pixels);
+
+}
+
+Data init(const std::string &window_title) {
 #ifdef _WIN32
   INT rc;
   WSADATA wsaData;
@@ -36,7 +59,7 @@ Data init(std::string window_title) {
 #endif
   // Setup window
   glfwSetErrorCallback(glfw_error_callback);
-  if (!glfwInit()) {
+  if (glfwInit() == 0) {
     return nullptr;
   }
 
@@ -65,24 +88,26 @@ Data init(std::string window_title) {
 
   // Create window with graphics context
   GLFWwindow *window =
-      glfwCreateWindow(1280, 720, window_title.c_str(), NULL, NULL);
-  if (window == NULL) {
+      glfwCreateWindow(1280, 720, window_title.c_str(), nullptr, nullptr);
+  if (window == nullptr) {
     return nullptr;
   }
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1); // Enable vsync
 
+  set_window_icon(window);
+
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImPlot::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  io.ConfigFlags |=
+  ImGuiIO &imio = ImGui::GetIO();
+  imio.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad
   // Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;   // Enable Docking
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable
+  imio.ConfigFlags |= ImGuiConfigFlags_DockingEnable;   // Enable Docking
+  imio.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable
   //   Multi-Viewport /
   // Platform Windows
   // io.ConfigViewportsNoAutoMerge = true;
@@ -95,81 +120,85 @@ Data init(std::string window_title) {
   // When viewports are enabled we tweak WindowRounding/WindowBg so platform
   // windows can look identical to regular ones.
   ImGuiStyle &style = ImGui::GetStyle();
-  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    style.WindowRounding = 0.0f;
-    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+  if ((imio.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
+      style.WindowRounding = 0.0F;
+      style.Colors[ImGuiCol_WindowBg].w = 1.0F;
   }
 
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  return new GLFWPlatformData{window, {0, 0, 0, 1}, io};
+  return new GLFWPlatformData{.window = window, .clear_color = {0, 0, 0, 1}, .io = imio};
 }
 
-void prerender(Data data) {
-  // Poll and handle events (inputs, window resize, etc.)
-  // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to
-  // tell if dear imgui wants to use your inputs.
-  // - When io.WantCaptureMouse is true, do not dispatch mouse input data to
-  // your main application, or clear/overwrite your copy of the mouse data.
-  // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input
-  // data to your main application, or clear/overwrite your copy of the
-  // keyboard data. Generally you may always pass all inputs to dear imgui,
-  // and hide them from your application based on those two flags.
-  glfwPollEvents();
+void prerender(Data /*data*/)
+{
+    // Poll and handle events (inputs, window resize, etc.)
+    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to
+    // tell if dear imgui wants to use your inputs.
+    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to
+    // your main application, or clear/overwrite your copy of the mouse data.
+    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input
+    // data to your main application, or clear/overwrite your copy of the
+    // keyboard data. Generally you may always pass all inputs to dear imgui,
+    // and hide them from your application based on those two flags.
+    glfwPollEvents();
 
-  // Start the Dear ImGui frame
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-  ImGuiWindowFlags window_flags =
-      ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse |
-      ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_DockNodeHost;
-  // ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
-  //  ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGuiWindowFlags const window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
+                                          | ImGuiWindowFlags_MenuBar
+                                          | ImGuiWindowFlags_DockNodeHost;
+    ImGuiID const imid = 0;
+    ImGui::DockSpaceOverViewport(imid, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
-void postrender(Data pdata) {
-  GLFWPlatformData *data = static_cast<GLFWPlatformData *>(pdata);
+void postrender(Data pdata)
+{
+    auto *data = static_cast<GLFWPlatformData *>(pdata);
 
-  // Rendering
-  ImGui::Render();
-  int display_w, display_h;
-  glfwGetFramebufferSize(data->window, &display_w, &display_h);
-  glViewport(0, 0, display_w, display_h);
-  glClearColor(data->clear_color.x * data->clear_color.w,
-               data->clear_color.y * data->clear_color.w,
-               data->clear_color.z * data->clear_color.w, data->clear_color.w);
-  glClear(GL_COLOR_BUFFER_BIT);
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // Rendering
+    ImGui::Render();
+    int display_w = 0;
+    int display_h = 0;
+    glfwGetFramebufferSize(data->window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClearColor(data->clear_color.x * data->clear_color.w,
+                 data->clear_color.y * data->clear_color.w,
+                 data->clear_color.z * data->clear_color.w,
+                 data->clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-  // Update and Render additional Platform Windows
-  // (Platform functions may change the current OpenGL context, so we
-  // save/restore it to make it easier to paste this code elsewhere.
-  //  For this specific demo app we could also call
-  //  glfwMakeContextCurrent(window) directly)
-  if (data->io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    GLFWwindow *backup_current_context = glfwGetCurrentContext();
-    ImGui::UpdatePlatformWindows();
-    ImGui::RenderPlatformWindowsDefault();
-    glfwMakeContextCurrent(backup_current_context);
-  }
+    // Update and Render additional Platform Windows
+    // (Platform functions may change the current OpenGL context, so we
+    // save/restore it to make it easier to paste this code elsewhere.
+    //  For this specific demo app we could also call
+    //  glfwMakeContextCurrent(window) directly)
+    if ((data->io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
+        GLFWwindow *backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+    }
 
-  glfwSwapBuffers(data->window);
+    glfwSwapBuffers(data->window);
 }
 
 void cleanup(Data pdata) {
-  GLFWPlatformData *data = static_cast<GLFWPlatformData *>(pdata);
-  // Cleanup
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImPlot::DestroyContext();
-  ImGui::DestroyContext();
+    auto *data = static_cast<GLFWPlatformData *>(pdata);
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
+    ImGui::DestroyContext();
 
-  glfwDestroyWindow(data->window);
-  glfwTerminate();
-  delete data;
+    glfwDestroyWindow(data->window);
+    glfwTerminate();
+    delete data;
 
 #ifdef _WIN32
   WSACleanup();
@@ -177,9 +206,9 @@ void cleanup(Data pdata) {
 }
 
 bool shouldclose(Data pdata) {
-  GLFWPlatformData *data = static_cast<GLFWPlatformData *>(pdata);
+    auto *data = static_cast<GLFWPlatformData *>(pdata);
 
-  return glfwWindowShouldClose(data->window);
+    return glfwWindowShouldClose(data->window) != 0;
 }
 
 } // namespace Platform

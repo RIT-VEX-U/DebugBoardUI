@@ -1,4 +1,6 @@
 #include "Types.hpp"
+#include <cstddef>
+#include <functional>
 #include <string>
 
 std::string DataPath::toString() const {
@@ -39,20 +41,19 @@ bool DataElementDescription::operator==(const DataElementDescription &other) con
   return path == other.path && type_hint == other.type_hint;
 }
 
-size_t DataElementDescriptionHash::operator()(
-    const DataElementDescription &obj) const {
-  size_t h1 = DataPathHasher{}(obj.path);
-  size_t h2 = std::hash<DataPrimitiveType>{}(obj.type_hint);
-  return h1 ^ (h2 << 1); // Combine hash values
+size_t DataElementDescriptionHash::operator()(const DataElementDescription &obj) const
+{
+    const size_t h1 = DataPathHasher{}(obj.path);
+    const size_t h2 = std::hash<DataPrimitiveType>{}(obj.type_hint);
+    return h1 ^ (h2 << 1); // Combine hash values
 }
 
 size_t DataPathHasher::operator()(const DataPath &path) const {
   size_t combined_hash = 0;
   for (const std::string &str : path.parts) {
-    std::hash<std::string> hasher;
-    size_t string_hash = hasher(str);
-    combined_hash ^=
-        string_hash + 0x9e3779b9 + (combined_hash << 6) + (combined_hash >> 2);
+      std::hash<std::string> const hasher;
+      const size_t string_hash = hasher(str);
+      combined_hash ^= string_hash + 0x9e3779b9 + (combined_hash << 6) + (combined_hash >> 2);
   }
   return combined_hash;
 }
