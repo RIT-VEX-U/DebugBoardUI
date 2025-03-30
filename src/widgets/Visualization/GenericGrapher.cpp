@@ -1,5 +1,5 @@
 #include "Visualization/GenericGrapher.hpp"
-#include "/home/unknown/Clubs/VEX/Code/DebugBoardUI/src/Types.hpp"
+#include "../Types.hpp"
 #include "GraphUtils.hpp"
 #include "Widget.hpp"
 #include "imgui.h"

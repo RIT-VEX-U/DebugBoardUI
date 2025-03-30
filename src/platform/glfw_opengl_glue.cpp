@@ -36,7 +36,6 @@ static void set_window_icon(GLFWwindow *window){
     // auto data = fs.open("assets/icon.png");
     auto data = fs.open("assets/RealLogo.jpg.png.png");
     int width, height, channels = 0;
-    // = stbi_load("/home/unknown/Clubs/VEX/Code/DebugBoardUI/assets/RealLogo.jpg.png.png", &width, &height, &channels, 4); // Force 4 channels (RGBA)
     unsigned char* pixels = stbi_load_from_memory((const unsigned char*)data.begin(), data.size(), &width, &height, &channels, 4);
 
     if (!pixels) {

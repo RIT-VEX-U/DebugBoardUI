@@ -11,7 +11,9 @@ add_library(Widgets)
 target_include_directories(Widgets PRIVATE 
     ${CMAKE_SOURCE_DIR}/vendor/imgui/ 
     ${CMAKE_SOURCE_DIR}/vendor
-    ${CMAKE_SOURCE_DIR}/vendor/eigen)
+    ${CMAKE_SOURCE_DIR}/vendor/eigen
+    ${CMAKE_SOURCE_DIR}/src # for type defs
+)
 target_include_directories(Widgets PUBLIC ./)
 
 target_sources(Widgets PRIVATE 
