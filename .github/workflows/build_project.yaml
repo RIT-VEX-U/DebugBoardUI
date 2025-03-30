@@ -13,8 +13,8 @@ jobs:
           version: 1.00
       - name: Set Defualt GCC
         run: |
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/local/gcc-14.1.0/bin/g++14.1.0 14
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/local/gcc-14.1.0/bin/gcc14.1.0 14
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/local/gcc-14.1.0/bin/g++14.2.0-4
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/local/gcc-14.1.0/bin/gcc14.2.0-4
 
       - name: Checkout
         uses: actions/checkout@v4.2.2
