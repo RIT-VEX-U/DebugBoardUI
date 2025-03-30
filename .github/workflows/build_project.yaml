@@ -9,10 +9,10 @@ jobs:
       - name: Install deps
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libwayland-dev libxkbcommon-dev xorg-dev libglew-dev gcc-14
+          packages: libwayland-dev libxkbcommon-dev xorg-dev libglew-dev gcc-14 g++14
           version: 1.00
-      - name: Set Defualt GCC
-        run: sudo update-alternatives --set gcc /usr/bin/gcc-14
+      # - name: Set Defualt GCC
+        # run: sudo update-alternatives --set gcc /usr/bin/gcc-14
 
       - name: Checkout
         uses: actions/checkout@v4.2.2
