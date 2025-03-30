@@ -6,6 +6,8 @@ project (
 	LANGUAGES CXX)
 add_library(VendorDeps)
 
+include(${CMAKE_CURRENT_LIST_DIR}/CmakeRC.cmake)
+
 # Dependencies ================================================================
 # Nlohmann Json -------------------------------------------
 # Typically you don't care so much for a third party library's tests to be

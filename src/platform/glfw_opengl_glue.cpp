@@ -8,6 +8,10 @@
 #include <cstdio>
 #include <format>
 #include "stb/stb_image.h"
+#include <cmrc/cmrc.hpp>
+
+
+CMRC_DECLARE(assets);
 
 #ifdef _WIN32
 #include <winsock.h>
@@ -28,8 +32,13 @@ struct GLFWPlatformData {
 
 
 static void set_window_icon(GLFWwindow *window){
+    auto fs = cmrc::assets::get_filesystem();
+    // auto data = fs.open("assets/icon.png");
+    auto data = fs.open("assets/RealLogo.jpg.png.png");
     int width, height, channels = 0;
-    unsigned char* pixels = stbi_load("/home/unknown/Clubs/VEX/Code/DebugBoardUI/assets/RealLogo.jpg.png.png", &width, &height, &channels, 4); // Force 4 channels (RGBA)
+    // = stbi_load("/home/unknown/Clubs/VEX/Code/DebugBoardUI/assets/RealLogo.jpg.png.png", &width, &height, &channels, 4); // Force 4 channels (RGBA)
+    unsigned char* pixels = stbi_load_from_memory((const unsigned char*)data.begin(), data.size(), &width, &height, &channels, 4);
+
     if (!pixels) {
         // Handle error loading image
         return;
