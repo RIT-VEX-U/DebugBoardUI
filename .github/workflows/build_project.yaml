@@ -11,10 +11,10 @@ jobs:
         with:
           packages: libwayland-dev libxkbcommon-dev xorg-dev libglew-dev gcc-14 g++14
           version: 1.00
-      - name: Set Defualt GCC
+      - name: Set Default GCC
         run: |
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/local/gcc-2.0/bin/g++14.2.0-4 100
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/local/gcc-2.0/bin/gcc14.2.0-4 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
 
       - name: Checkout
         uses: actions/checkout@v4.2.2

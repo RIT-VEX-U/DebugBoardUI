@@ -1,5 +1,6 @@
 #include "datasources/DebugBoard.hpp"
 #include "imgui.h"
+#include <print>
 
 using json = nlohmann::json;
 
@@ -22,7 +23,7 @@ void DebugBoard::feedPacket(const std::string &json_obj) {
     json data = json::parse(json_obj);
     feedPacket(data);
   } catch (const std::exception &e) {
-    printf("Failed to parse json: %s\n", e.what());
+    std::println("Failed to parse json: {}", e.what());
   }
 }
 
@@ -43,11 +44,11 @@ bool isData(const json &obj) {
 void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
 
   if (!chan_j.contains("channel_id") || !chan_j.contains("schema")) {
-    printf("Bad Channel\n");
+    std::puts("Bad Channel");
     return;
   }
   if (!chan_j["channel_id"].is_number_integer()) {
-    printf("Bad channel ud\n");
+    std::puts("Bad channel ud");
     return;
   }
   int chan_id = chan_j["channel_id"];
@@ -58,12 +59,12 @@ void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
   walk = [&](const std::vector<std::string> &path_so_far, const json &o) {
     if (!o.contains("type") || !o.contains("name")) {
       // don't know how to process
-      printf("idk how to process\n");
+      std::println("idk how to process");
       return;
     }
     if (!o["name"].is_string() || !o["type"].is_string()) {
       // bad types
-      printf("bad types\n");
+      std::println("bad types");
       return;
     }
     std::string name = o["name"];
@@ -73,7 +74,7 @@ void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
 
     if (valType == "record") {
       if (!o.contains("fields") || !o["fields"].is_array()) {
-        printf("bad record\n");
+        std::println("bad record\n");
         return;
       } else {
         for (const json &field : o["fields"]) {
@@ -93,7 +94,7 @@ void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
       sofar.insert(DataElementDescription{
           .path = DataPath{path}, .type_hint = DataPrimitiveType::String});
     } else {
-      printf("Unknown type: %s\n", valType.c_str());
+      std::println("Unknown type: %s", valType);
     }
   };
 
@@ -102,7 +103,7 @@ void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
 
 void DebugBoard::HandleAdvertise(const json &json_obj) {
   std::string ms = json_obj.dump();
-  printf("advertise: %s\n", ms.c_str());
+  std::println("advertise: %s", ms);
   if (!json_obj.contains("channels") || !json_obj["channels"].is_array()) {
     return;
   }
@@ -115,9 +116,6 @@ void DebugBoard::HandleAdvertise(const json &json_obj) {
 
 std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
   std::vector<DataElement> updates = {};
-
-  // std::string ms = "outer" + json_obj.dump();
-  // std::puts(ms.c_str());
 
   if (!json_obj.contains("channel_id") || !json_obj["channel_id"].is_number()) {
     return DataError{"Missing 'channel_id' or 'channel_id' wasn't number"};
@@ -141,7 +139,7 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
       if (curr_node.contains(path[path_idx])) {
         curr_node = curr_node[path[path_idx]];
       } else {
-        std::puts(std::format("Couldnt find {}", path[path_idx]).c_str());
+        std::println("Couldnt find {}", path[path_idx]);
         break;
       }
     }
@@ -157,12 +155,12 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
         updates.push_back(DataElement{.path = loc, .value = value});
 
       } else {
-        std::puts(curr_node.dump().c_str());
-        printf("Expected double at but got something else\n");
+        std::println("{}", curr_node.dump());
+        std::println("Expected double at but got something else");
       }
 
     } else if (sup.type_hint == DataPrimitiveType::Int) {
-      printf("INT UNIMPLEMENTED" __FILE__ ":%d\n", __LINE__);
+      std::println("INT UNIMPLEMENTED {}:{}", __FILE__, __LINE__);
       return DataError{"INT Handler unimplemented"};
     } else if (sup.type_hint == DataPrimitiveType::Uint) {
       if (curr_node.is_number()) {
@@ -171,12 +169,12 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
         updates.push_back(DataElement{.path = loc, .value = (uint64_t)value});
 
       } else {
-        printf("Expected uint at but got something else\n");
+        std::println("Expected uint at but got something else\n");
         return DataError{std::format("Expected a Uint at '{}' but got {}",
                                      sup.path.toString(), curr_node.dump())};
       }
     } else {
-      printf("INLKNOWN PRIITIZVE TYPE\n");
+      std::println("INLKNOWN PRIITIZVE TYPE\n");
     }
   }
 
@@ -191,11 +189,10 @@ void DebugBoard::feedPacket(const json &json_obj) {
   } else if (isData(json_obj)) {
     auto res = HandleData(json_obj);
     if (res.has_value()) {
-      std::puts(
-          std::format("error feeding packet: {}", res.value().message).c_str());
+      std::println("error feeding packet: {}", res.value().message);
     }
   } else {
-    std::puts(std::format("Weird lookin packet: {}", json_obj.dump()).c_str());
+    std::println("Weird lookin packet: {}", json_obj.dump());
   }
 }
 
