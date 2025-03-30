@@ -5,14 +5,29 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # for IDEs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_subdirectory(vendor)
-add_subdirectory(src/widgets)
-
 ## project
 project (
 	DebugBoardUI
 	DESCRIPTION "DebugBoardUI using ImGui with GLFW, OpenGL3"
-	LANGUAGES CXX)
+	LANGUAGES C CXX)
+
+# Try to do IPO (LTO)
+include(CheckIPOSupported)
+check_ipo_supported(RESULT lto_supported OUTPUT error)
+
+if( lto_supported AND (NOT CMAKE_BUILD_TYPE MATCHES Debug))
+    message(STATUS "IPO / LTO enabled")
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+elseif(lto_supported)
+	message(STATUS "LTO Supported but not enabled for debug build")
+else()
+    message(STATUS "IPO / LTO not supported: <${error}>")
+endif()
+
+
+add_subdirectory(vendor)
+add_subdirectory(src/widgets)
+
 	
 	
 	## Create main executable
