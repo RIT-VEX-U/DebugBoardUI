@@ -1,15 +1,9 @@
-#include "imgui.h"
-
 #include "platform/glue.hpp"
-#include <math.h>
 
 #include "Workspace.hpp"
 #include "datasources/DebugBoard.hpp"
-#include "nlohmann/json.hpp"
-#include "widgets/WidgetRegistry.hpp"
 #include <cstdio>
-#include <format>
-#include <string>
+#include <memory>
 
 int main() {
   auto board = std::make_shared<DebugBoardWebsocket>("ws://localhost:8080/ws");

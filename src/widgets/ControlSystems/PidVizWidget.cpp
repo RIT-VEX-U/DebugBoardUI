@@ -10,12 +10,9 @@ PidVizWidget::~PidVizWidget() {}
 // void PidVizWidget::RegisterDataCallback() {}
 
 void PidVizWidget::ReceiveData(DataElement data) {
-  // printf("%s ?= %s\n", data.path.toString().c_str(),
-  // sp_loc.toString().c_str());
   if (data.path == sp_loc) {
     t += 0.01;
     double sp = std::get<double>(data.value);
-    // printf("I got %s: %f\n", data.path.toString().c_str(), sp);
     sdata.AddPoint(ImVec2{(float)t, (float)sp});
   }
 }

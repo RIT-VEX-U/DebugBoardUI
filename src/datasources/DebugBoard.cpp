@@ -1,6 +1,6 @@
 #include "datasources/DebugBoard.hpp"
 #include "imgui.h"
-#include <nlohmann/json.hpp>
+
 using json = nlohmann::json;
 
 DebugBoard::DebugBoard() {}
@@ -96,7 +96,6 @@ void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
   };
 
   walk({std::to_string(chan_id)}, chan_j["schema"]);
-  printf("Walked:%d\n", (int)sofar.size());
 }
 
 void DebugBoard::HandleAdvertise(const json &json_obj) {
@@ -112,55 +111,43 @@ void DebugBoard::HandleAdvertise(const json &json_obj) {
   current_channels = open_streams;
 }
 
-void DebugBoard::HandleData(const json &json_obj) {
+std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
   std::vector<DataElement> updates = {};
 
   // std::string ms = "outer" + json_obj.dump();
   // std::puts(ms.c_str());
 
   if (!json_obj.contains("channel_id") || !json_obj["channel_id"].is_number()) {
-    // printf("no channel id for packet: %s\n", ms.c_str());
-    return;
+    return DataError{"Missing 'channel_id' or 'channel_id' wasn't number"};
   }
   if (!json_obj.contains("data") || !json_obj["data"].is_object()) {
-    printf("Wrong type of data\n");
-    return;
+    return DataError{"Missing 'data' or 'data' wasn't an object"};
   }
   size_t channel_id = json_obj["channel_id"];
   json data = json_obj["data"];
 
   std::string du = data.dump();
-  // printf("DU: %s\n", du.c_str());
 
   for (const DataElementDescription &sup : current_channels) {
     if (sup.path.parts.size() < 1 ||
         sup.path.parts[0] != std::to_string(channel_id)) {
-      // std::puts(std::format("Skipping bc wrong channel. wanted {} got {}",
-      // sup.path.path[0], channel_id)
-      // .c_str());
       continue;
     }
-    // valid thingy
-    std::string s = sup.path.toString();
-    std::puts(s.c_str());
-    // printf("Checking %s\n", s.c_str());
+
     const std::vector<std::string> &path = sup.path.parts;
     json curr_node = data;
     for (int path_idx = 1; path_idx < path.size(); path_idx++) {
       auto d = curr_node.dump();
-      // printf("looking at %s\n", d.c_str());
       if (curr_node.contains(path[path_idx])) {
         curr_node = curr_node[path[path_idx]];
-        // printf("Following: %s\n", path[path_idx].c_str());
       } else {
-        printf("Couldnt find %s\n", path[path_idx].c_str());
+        std::puts(std::format("Couldnt find {}", path[path_idx]).c_str());
         break;
       }
     }
     // if we got here, we have followed the thing to its end and havent skipped
     // curr_node is a data value
-    // printf("Found: %s of %s\n", curr_node.dump().c_str(),
-    //  curr_node.type_name());
+
     DataLocator loc =
         DataLocator{.source_name = Name(), .path = sup.path, .special = false};
     if (sup.type_hint == DataPrimitiveType::Float) {
@@ -176,14 +163,17 @@ void DebugBoard::HandleData(const json &json_obj) {
 
     } else if (sup.type_hint == DataPrimitiveType::Int) {
       printf("INT UNIMPLEMENTED" __FILE__ ":%d\n", __LINE__);
+      return DataError{"INT Handler unimplemented"};
     } else if (sup.type_hint == DataPrimitiveType::Uint) {
       if (curr_node.is_number()) {
         // we're good
         size_t value = curr_node;
-        updates.push_back(DataElement{.path = loc, .value = value});
+        updates.push_back(DataElement{.path = loc, .value = (uint64_t)value});
 
       } else {
         printf("Expected uint at but got something else\n");
+        return DataError{std::format("Expected a Uint at '{}' but got {}",
+                                     sup.path.toString(), curr_node.dump())};
       }
     } else {
       printf("INLKNOWN PRIITIZVE TYPE\n");
@@ -192,13 +182,18 @@ void DebugBoard::HandleData(const json &json_obj) {
 
   unread_updates.push_back(
       DataUpdate{.rx_time = Timestamp::clock::now(), .new_data = updates});
+  return {};
 }
 
 void DebugBoard::feedPacket(const json &json_obj) {
   if (isAdvertise(json_obj)) {
     HandleAdvertise(json_obj);
   } else {
-    HandleData(json_obj);
+    auto res = HandleData(json_obj);
+    if (res.has_value()) {
+      std::puts(
+          std::format("error feeding packet: {}", res.value().message).c_str());
+    }
   }
 }
 
@@ -215,10 +210,7 @@ std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
   }
 
   ws_->poll();
-  ws_->dispatch([&](std::string msg) {
-    // printf("Got: %s\n", msg.c_str());
-    DebugBoard::feedPacket(msg);
-  });
+  ws_->dispatch([&](std::string msg) { DebugBoard::feedPacket(msg); });
 
   return DebugBoard::PollData();
 }

@@ -15,7 +15,7 @@ public:
   ~DebugBoard();
 
   void HandleAdvertise(const json &json_obj);
-  void HandleData(const json &json_obj);
+  std::optional<DataError> HandleData(const json &json_obj);
 
   std::vector<DataUpdate> PollData() override;
   DataElementSet ProvidedData() const override;

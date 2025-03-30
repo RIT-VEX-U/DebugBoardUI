@@ -1,18 +1,20 @@
+#include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "implot/implot.h"
 #include "implot/implot_internal.h"
 #include "platform/glue.hpp"
 #include <cstdio>
-#include <math.h>
+#include <format>
 #ifdef _WIN32
 #include <winsock.h>
 #endif
 
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 namespace Platform {
-static void glfw_error_callback(int error, const char *description) {
-  fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+void glfw_error_callback(int error, const char *description) {
+  std::fputs(std::format("GLFW Error {}: {}", error, description).c_str(),
+             stderr);
 }
 
 struct GLFWPlatformData {

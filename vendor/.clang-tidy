@@ -1,0 +1,3 @@
+# Disable all checks in this folder.
+# We don't need to lint vendor code
+Checks: '-*'

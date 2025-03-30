@@ -7,6 +7,10 @@
 #include <variant>
 #include <vector>
 
+struct DataError {
+  std::string message;
+};
+
 /**
  * DataPath - a comparable representation of a position in a hierarchy
  */
@@ -64,6 +68,11 @@ struct DataElementDescription {
   bool operator==(const DataElementDescription &o) const;
 };
 
+// Allows use of DataElementDescription in sets
+struct DataElementDescriptionHash {
+  size_t operator()(const DataElementDescription &obj) const;
+};
+
 struct DataElement {
   DataLocator path;
   DataPrimitive value;
@@ -76,7 +85,6 @@ struct DataUpdate {
   std::vector<DataElement> new_data;
 };
 
-struct DataElementDescriptionHash;
 class DataSource {
 public:
   using DataElementSet =
@@ -100,7 +108,3 @@ public:
  * @return true if the user made a selection with this widget
  */
 bool DataLocationSelector(const char *name, DataLocator &current);
-
-struct DataElementDescriptionHash {
-  size_t operator()(const DataElementDescription &obj) const;
-};
