@@ -22,8 +22,15 @@ void GenericGrapher::Draw(bool *should_close) {
       data.push_back(AxisData{
           .secondary_y = false,
           .loc = DataLocator{},
-          .data = {},
+          .data = ScrollingBuffer<float>{},
       });
+    }
+    if (reregister) {
+      std::vector<DataLocator> wanted_data{};
+      for (const auto &series : data) {
+        wanted_data.push_back(series.loc);
+      }
+      RegisterDataCallback(wanted_data);
     }
   }
   ImGui::End();

@@ -30,10 +30,10 @@ void RouteData() {
       updates.push_back({source->Name(), up});
     }
   }
+
   for (auto [key, widget] : active_widgets) {
-    for (DataLocator wanted : widget->WantedData()) {
+    for (const DataLocator &wanted : widget->WantedData()) {
       for (auto up : updates) {
-        std::string src = up.first;
         const DataUpdate &update = up.second;
         for (auto specific_data : update.new_data) {
           if (specific_data.path == wanted) {
@@ -109,8 +109,8 @@ void DrawNewDatasourceUI() {
 
 void Draw() {
   auto vp = ImGui::GetMainViewport();
-  ImGuiID id = 0;
-  ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(id, vp);
+  ImGuiID imid = 0;
+  ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(imid, vp);
   (void)dockspace_id;
   DrawMenuBar();
 
@@ -141,12 +141,10 @@ void Draw() {
     ImGui::ShowDemoWindow(&draw_demo_window);
   }
 }
-float to_radian(float deg) { return (deg * (3.14 / 180.0)); }
-static float knob_value = 0;
 
 } // namespace Workspace
 
-bool DataPathMenu(DataLocator &current, std::string source_name,
+bool DataPathMenu(DataLocator &current, const std::string &source_name,
                   std::shared_ptr<DataSource> source) {
   DataSource::DataElementSet chans = source->ProvidedData();
 
@@ -157,7 +155,7 @@ bool DataPathMenu(DataLocator &current, std::string source_name,
   }
   ImGui::Separator();
 
-  for (DataElementDescription chan : chans) {
+  for (const DataElementDescription &chan : chans) {
     auto str = chan.path.toString();
     bool youSelected =
         current.path == chan.path && current.source_name == source_name;

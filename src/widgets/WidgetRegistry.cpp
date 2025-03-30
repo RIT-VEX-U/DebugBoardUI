@@ -2,7 +2,7 @@
 
 WidgetRegistry::WidgetRegistry() {}
 
-void WidgetRegistry::RegisterWidget(std::string name,
+void WidgetRegistry::RegisterWidget(const std::string &name,
                                     DefaultWidgetCreator creator) {
   registered_widgets[name] = creator;
 }

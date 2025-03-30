@@ -5,8 +5,8 @@
 #include "imgui.h"
 class PidVizWidget : public WidgetImpl {
 public:
-  PidVizWidget(WidgetId id);
-  ~PidVizWidget();
+  explicit PidVizWidget(WidgetId id);
+  ~PidVizWidget() override;
 
   void ReceiveData(DataElement data) override;
   // Use ImGui to draw a this widget

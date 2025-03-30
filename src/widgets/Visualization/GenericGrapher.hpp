@@ -5,11 +5,11 @@
 class GenericGrapher : public WidgetImpl {
 public:
   struct AxisData {
-    bool secondary_y;
-    DataLocator loc;
-    ScrollingBuffer<float> data;
+    bool secondary_y = false;
+    DataLocator loc = {};
+    ScrollingBuffer<float> data = ScrollingBuffer<float>{};
   };
-  GenericGrapher(WidgetId id);
+  explicit GenericGrapher(WidgetId id);
 
   void ReceiveData(DataElement data) override;
   void Draw(bool *should_close) override;

@@ -39,8 +39,8 @@ void PidVizWidget::Draw(bool *should_close) {
     }
 
     ImGui::Checkbox("Plot error", &plot_error_);
-    float history = 10.0;
     if (ImPlot::BeginPlot("Scrolling", ImVec2(-1, 250))) {
+      float history = 10.0;
       ImPlot::SetupAxes("Scrolling Title a", "Scrolling Title b", flags, flags);
       ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
       ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);

@@ -12,7 +12,7 @@ using json = nlohmann::json;
 class DebugBoard : public DataSource {
 public:
   DebugBoard();
-  ~DebugBoard();
+  ~DebugBoard() override;
 
   void HandleAdvertise(const json &json_obj);
   std::optional<DataError> HandleData(const json &json_obj);
@@ -32,8 +32,9 @@ class DebugBoardWebsocket : public DebugBoard {
 public:
   using TimeDuration = std::chrono::duration<int64_t>;
 
-  DebugBoardWebsocket(const std::string &ws_url,
-                      TimeDuration retry_period = std::chrono::seconds(1));
+  explicit DebugBoardWebsocket(
+      const std::string &ws_url,
+      TimeDuration retry_period = std::chrono::seconds(1));
 
   std::string Name() const override;
   std::vector<DataUpdate> PollData() override;

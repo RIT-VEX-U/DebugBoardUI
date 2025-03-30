@@ -4,7 +4,7 @@ class WidgetRegistry {
 public:
   using MapType = std::unordered_map<std::string, DefaultWidgetCreator>;
   WidgetRegistry();
-  void RegisterWidget(std::string name, DefaultWidgetCreator creator);
+  void RegisterWidget(const std::string &name, DefaultWidgetCreator creator);
   MapType::iterator begin();
   MapType::iterator end();
 

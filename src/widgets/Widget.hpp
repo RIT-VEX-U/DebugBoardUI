@@ -21,10 +21,10 @@ public:
 
   WidgetId Id();
 
-  std::vector<DataLocator> WantedData() const;
+  const std::vector<DataLocator> &WantedData() const;
 
 protected:
-  void RegisterDataCallback(std::vector<DataLocator> wanted_data);
+  void RegisterDataCallback(const std::vector<DataLocator> &wanted_data);
 
 private:
   WidgetId id_;

@@ -10,7 +10,7 @@ public:
   int Offset;
   std::vector<value_type> Data;
 
-  ScrollingBuffer(int max_size = 2000) {
+  explicit ScrollingBuffer(int max_size = 2000) {
     MaxSize = max_size;
     Offset = 0;
     Data.reserve(MaxSize);
@@ -39,7 +39,7 @@ public:
   ;
   std::vector<value_type> Data;
 
-  RollingBuffer(size_t max_size = 2000) {
+  explicit RollingBuffer(size_t max_size = 2000) {
     MaxSize = max_size;
     Data.reserve(MaxSize);
   }

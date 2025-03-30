@@ -52,8 +52,10 @@ void parseChannel(DataSource::DataElementSet &sofar, const json &chan_j) {
   }
   int chan_id = chan_j["channel_id"];
 
-  std::function<void(std::vector<std::string> path_so_far, const json &o)> walk;
-  walk = [&](std::vector<std::string> path_so_far, const json &o) {
+  std::function<void(const std::vector<std::string> &path_so_far,
+                     const json &o)>
+      walk;
+  walk = [&](const std::vector<std::string> &path_so_far, const json &o) {
     if (!o.contains("type") || !o.contains("name")) {
       // don't know how to process
       printf("idk how to process\n");
@@ -126,8 +128,6 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
   size_t channel_id = json_obj["channel_id"];
   json data = json_obj["data"];
 
-  std::string du = data.dump();
-
   for (const DataElementDescription &sup : current_channels) {
     if (sup.path.parts.size() < 1 ||
         sup.path.parts[0] != std::to_string(channel_id)) {
@@ -188,12 +188,14 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
 void DebugBoard::feedPacket(const json &json_obj) {
   if (isAdvertise(json_obj)) {
     HandleAdvertise(json_obj);
-  } else {
+  } else if (isData(json_obj)) {
     auto res = HandleData(json_obj);
     if (res.has_value()) {
       std::puts(
           std::format("error feeding packet: {}", res.value().message).c_str());
     }
+  } else {
+    std::puts(std::format("Weird lookin packet: {}", json_obj.dump()).c_str());
   }
 }
 
