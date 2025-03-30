@@ -78,7 +78,6 @@ void DrawMenuBar() {
     {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Open Workspace", "Ctrl + O")) {
-          printf("Open workspace\n");
         }
         ImGui::MenuItem("Save Workspace", "Ctrl + S");
         ImGui::EndMenu();

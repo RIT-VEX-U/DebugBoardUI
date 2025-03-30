@@ -7,33 +7,27 @@
 #include <variant>
 #include <vector>
 
+/**
+ * DataPath - a comparable representation of a position in a hierarchy
+ */
 struct DataPath {
-  std::vector<std::string> path;
+  /**
+   * Convert path to a string for printing using / as a separator
+   * @return string representation
+   */
   std::string toString() const;
+  /**
+   * Check if two paths are equal. Does string comparison on all elements
+   * @param o object to compare to
+   * @return true if the paths are equal
+   */
+  bool operator==(const DataPath &o) const;
 
-  bool operator==(const DataPath &o) const {
-    if (o.path.size() != path.size()) {
-      return false;
-    }
-    for (size_t i = 0; i < path.size(); i++) {
-      if (path[i] != o.path[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
+  std::vector<std::string> parts;
 };
+// Hasher for DataPath. Allows use in sets
 struct DataPathHasher {
-  size_t operator()(const DataPath &path) const {
-    size_t combined_hash = 0;
-    for (const std::string &str : path.path) {
-      std::hash<std::string> hasher;
-      size_t string_hash = hasher(str);
-      combined_hash ^= string_hash + 0x9e3779b9 + (combined_hash << 6) +
-                       (combined_hash >> 2);
-    }
-    return combined_hash;
-  }
+  size_t operator()(const DataPath &path) const;
 };
 
 struct DataLocator {
@@ -46,20 +40,28 @@ struct DataLocator {
   bool operator==(const DataLocator &) const;
 };
 
+/**
+ * Types that can be made available by sources.
+ * DataPrimitiveType only identifies them. DataPrimitive can be used to hold
+ * these types
+ */
 enum DataPrimitiveType {
   String,
   Float,
   Int,
   Uint,
 };
+
+/**
+ * Type that can hold base element of data that sources can provide
+ * "The thing at the end of the path"
+ */
 using DataPrimitive = std::variant<std::string, double, int64_t, uint64_t>;
 
 struct DataElementDescription {
   DataPath path;
   DataPrimitiveType type_hint;
-  bool operator==(const DataElementDescription &o) const {
-    return path == o.path && type_hint == o.type_hint;
-  }
+  bool operator==(const DataElementDescription &o) const;
 };
 
 struct DataElement {
@@ -73,18 +75,13 @@ struct DataUpdate {
   Timestamp rx_time;
   std::vector<DataElement> new_data;
 };
-struct DataElementDescriptionHash {
-  size_t operator()(const DataElementDescription &obj) const {
-    size_t h1 = DataPathHasher{}(obj.path);
-    size_t h2 = std::hash<DataPrimitiveType>{}(obj.type_hint);
-    return h1 ^ (h2 << 1); // Combine hash values
-  }
-};
 
+struct DataElementDescriptionHash;
 class DataSource {
 public:
   using DataElementSet =
       std::unordered_set<DataElementDescription, DataElementDescriptionHash>;
+
   virtual ~DataSource() {}
   /// a human readable name describing this data source
   virtual std::string Name() const = 0;
@@ -94,4 +91,16 @@ public:
   virtual void Draw() = 0;
 };
 
+/**
+ * Draw a widget used for selecting data sources
+ * presents a menu showing available datasources and their data channels
+ * @param[in] name a name to display for this input
+ * @param[inout] current the current locator, when a user selects a new choice,
+ * this will be reflected to use that choice
+ * @return true if the user made a selection with this widget
+ */
 bool DataLocationSelector(const char *name, DataLocator &current);
+
+struct DataElementDescriptionHash {
+  size_t operator()(const DataElementDescription &obj) const;
+};

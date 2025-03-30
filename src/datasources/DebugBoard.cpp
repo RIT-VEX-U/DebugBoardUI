@@ -133,8 +133,8 @@ void DebugBoard::HandleData(const json &json_obj) {
   // printf("DU: %s\n", du.c_str());
 
   for (const DataElementDescription &sup : current_channels) {
-    if (sup.path.path.size() < 1 ||
-        sup.path.path[0] != std::to_string(channel_id)) {
+    if (sup.path.parts.size() < 1 ||
+        sup.path.parts[0] != std::to_string(channel_id)) {
       // std::puts(std::format("Skipping bc wrong channel. wanted {} got {}",
       // sup.path.path[0], channel_id)
       // .c_str());
@@ -144,7 +144,7 @@ void DebugBoard::HandleData(const json &json_obj) {
     std::string s = sup.path.toString();
     std::puts(s.c_str());
     // printf("Checking %s\n", s.c_str());
-    const std::vector<std::string> &path = sup.path.path;
+    const std::vector<std::string> &path = sup.path.parts;
     json curr_node = data;
     for (int path_idx = 1; path_idx < path.size(); path_idx++) {
       auto d = curr_node.dump();
