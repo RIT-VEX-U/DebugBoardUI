@@ -9,7 +9,7 @@ jobs:
       - name: Install deps
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libwayland-dev libxkbcommon-dev xorg-dev libglew-dev
+          packages: libwayland-dev libxkbcommon-dev xorg-dev libglew-dev gcc-14
           version: 1.00
 
       - name: Checkout

@@ -1,4 +1,6 @@
 #include "Widget.hpp"
+#include "../Types.hpp"
+#include <vector>
 
 WidgetImpl::WidgetImpl(WidgetId id) : id_(id) {}
 

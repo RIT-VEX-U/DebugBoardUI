@@ -6,6 +6,7 @@
 #include <cmath>
 #include <print>
 
+
 PidVizWidget::PidVizWidget(WidgetId id)
     : WidgetImpl(id), plot_error_(false), t(0) {}
 
@@ -29,7 +30,7 @@ void PidVizWidget::Draw(bool *should_close) {
     modified |= DataLocationSelector("pv", pv_loc);
     bool any_bad = t_loc.isEmpty() || sp_loc.isEmpty() || pv_loc.isEmpty();
     if (modified && !any_bad) {
-      std::println("Registering new");
+      std::puts("Registering new");
       RegisterDataCallback({t_loc, sp_loc, pv_loc});
     }
     if (any_bad) {

@@ -1,9 +1,8 @@
 #include "Types.hpp"
-#include "imgui.h"
-#include "implot/implot.h"
+#include <string>
 
 std::string DataPath::toString() const {
-  if (parts.size() == 0) {
+  if (parts.empty()) {
     return "";
   }
   std::string accum = parts[0];
@@ -20,24 +19,24 @@ std::string DataLocator::toString() const {
   return source_name + ":/" + path.toString();
 }
 
-bool DataLocator::operator==(const DataLocator &o) const {
-  return o.path == path && o.source_name == source_name && o.special == special;
+bool DataLocator::operator==(const DataLocator &other) const {
+  return other.path == path && other.source_name == source_name && other.special == special;
 }
 
-bool DataPath::operator==(const DataPath &o) const {
-  if (o.parts.size() != parts.size()) {
+bool DataPath::operator==(const DataPath &other) const {
+  if (other.parts.size() != parts.size()) {
     return false;
   }
   for (size_t i = 0; i < parts.size(); i++) {
-    if (parts[i] != o.parts[i]) {
+    if (parts[i] != other.parts[i]) {
       return false;
     }
   }
   return true;
 }
 
-bool DataElementDescription::operator==(const DataElementDescription &o) const {
-  return path == o.path && type_hint == o.type_hint;
+bool DataElementDescription::operator==(const DataElementDescription &other) const {
+  return path == other.path && type_hint == other.type_hint;
 }
 
 size_t DataElementDescriptionHash::operator()(
