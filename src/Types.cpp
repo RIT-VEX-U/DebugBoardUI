@@ -12,8 +12,8 @@ std::string DataPath::toString() const {
   }
   return accum;
 }
-bool DataLocator::isEmpty() { return source_name.empty(); };
-std::string DataLocator::toString() {
+bool DataLocator::isEmpty() const { return source_name.empty(); };
+std::string DataLocator::toString() const {
   if (isEmpty()) {
     return "(invalid location)";
   }
@@ -46,7 +46,6 @@ size_t DataElementDescriptionHash::operator()(
   size_t h2 = std::hash<DataPrimitiveType>{}(obj.type_hint);
   return h1 ^ (h2 << 1); // Combine hash values
 }
-
 
 size_t DataPathHasher::operator()(const DataPath &path) const {
   size_t combined_hash = 0;

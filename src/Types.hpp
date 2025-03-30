@@ -39,8 +39,8 @@ struct DataLocator {
   DataPath path;
   bool special;
 
-  std::string toString();
-  bool isEmpty();
+  std::string toString() const;
+  bool isEmpty() const;
   bool operator==(const DataLocator &) const;
 };
 

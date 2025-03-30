@@ -19,7 +19,7 @@ public:
   // Use ImGui to draw a this widget
   virtual void Draw(bool *should_close) = 0;
 
-  WidgetId Id();
+  WidgetId Id const();
 
   const std::vector<DataLocator> &WantedData() const;
 

@@ -15,7 +15,7 @@ public:
     Offset = 0;
     Data.reserve(MaxSize);
   }
-  void AddPoint(value_type y) {
+  void AddPoint(const value_type &y) {
     if (Data.size() < MaxSize)
       Data.push_back(y);
     else {
@@ -39,11 +39,10 @@ public:
   ;
   std::vector<value_type> Data;
 
-  explicit RollingBuffer(size_t max_size = 2000) {
-    MaxSize = max_size;
+  explicit RollingBuffer(size_t max_size = 2000) : MaxSize(max_size) {
     Data.reserve(MaxSize);
   }
-  void AddPoint(value_type val) {
+  void AddPoint(const value_type &val) {
     if (Data.size() == MaxSize) {
       Data.resize(0);
     }
