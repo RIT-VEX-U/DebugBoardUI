@@ -12,14 +12,13 @@ using DefaultWidgetCreator = std::function<Widget(WidgetId)>;
 
 class WidgetImpl {
 public:
-  WidgetImpl(WidgetId id);
-  virtual ~WidgetImpl() {}
+  explicit WidgetImpl(WidgetId id);
 
   virtual void ReceiveData(DataElement data) = 0;
   // Use ImGui to draw a this widget
   virtual void Draw(bool *should_close) = 0;
 
-  WidgetId Id const();
+  WidgetId Id() const;
 
   const std::vector<DataLocator> &WantedData() const;
 

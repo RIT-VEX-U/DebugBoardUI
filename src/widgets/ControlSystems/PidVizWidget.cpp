@@ -1,13 +1,13 @@
 #include "ControlSystems/PidVizWidget.hpp"
+#include "Widget.hpp"
 #include "imgui.h"
 #include "implot/implot.h"
-#include "math.h"
 #include <../Types.hpp>
+#include <cmath>
+#include <print>
 
 PidVizWidget::PidVizWidget(WidgetId id)
     : WidgetImpl(id), plot_error_(false), t(0) {}
-PidVizWidget::~PidVizWidget() {}
-// void PidVizWidget::RegisterDataCallback() {}
 
 void PidVizWidget::ReceiveData(DataElement data) {
   if (data.path == sp_loc) {
@@ -29,7 +29,7 @@ void PidVizWidget::Draw(bool *should_close) {
     modified |= DataLocationSelector("pv", pv_loc);
     bool any_bad = t_loc.isEmpty() || sp_loc.isEmpty() || pv_loc.isEmpty();
     if (modified && !any_bad) {
-      printf("Registering new\n");
+      std::println("Registering new");
       RegisterDataCallback({t_loc, sp_loc, pv_loc});
     }
     if (any_bad) {
@@ -45,10 +45,11 @@ void PidVizWidget::Draw(bool *should_close) {
       ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
       ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
       ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
-      if (sdata.Data.size() > 0) {
+      if (!sdata.Data.empty()) {
 
         ImPlot::PlotLine("Data", &sdata.Data[0].x, &sdata.Data[0].y,
-                         sdata.Data.size(), 0, sdata.Offset, 2 * sizeof(float));
+                         (int)sdata.Data.size(), 0, sdata.Offset,
+                         2 * sizeof(float));
       }
       ImPlot::EndPlot();
     }

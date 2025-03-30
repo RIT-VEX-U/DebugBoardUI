@@ -6,7 +6,6 @@
 class PidVizWidget : public WidgetImpl {
 public:
   explicit PidVizWidget(WidgetId id);
-  ~PidVizWidget() override;
 
   void ReceiveData(DataElement data) override;
   // Use ImGui to draw a this widget
