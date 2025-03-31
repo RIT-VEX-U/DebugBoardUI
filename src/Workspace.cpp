@@ -23,6 +23,8 @@ void AddSource(const std::shared_ptr<DataSource> &src)
 static bool draw_plot_window = false;
 static bool draw_demo_window = false;
 
+static std::unordered_map<DataLocator, DataAndTime, DataLocatorHasher> seen_data{};
+
 static std::unordered_map<WidgetId, Widget> active_widgets = {};
 static WidgetId widget_id_count = 0;
 static WidgetId NextWidgetId() {
@@ -30,27 +32,61 @@ static WidgetId NextWidgetId() {
   return widget_id_count;
 }
 
-void RouteData() {
-    std::vector<std::pair<std::string, DataUpdate>> updates{};
-    for (const auto &source : sources) {
-        std::vector<DataUpdate> const src_updates = source->PollData();
-        for (const auto &up : src_updates) {
-            updates.emplace_back(source->Name(), up);
+std::unordered_set<WidgetId> activeWidgetsThatNeedThisData(DataLocator loc){
+    std::unordered_set<WidgetId> needies{};
+    for (const auto &[id, widget]: active_widgets){
+        if (widget->WantedData().contains(loc)){
+            needies.emplace(id);
         }
     }
 
-  for (const auto& [key, widget] : active_widgets) {
-      for (const DataLocator &wanted : widget->WantedData()) {
-          for (const std::pair<std::string, DataUpdate> &name_and_up : updates) {
-              const DataUpdate &update = name_and_up.second;
-              for (const auto &specific_data : update.new_data) {
-                  if (specific_data.path == wanted) {
-                      widget->ReceiveData(specific_data);
-                  }
-              }
-          }
-      }
-  }
+    return needies;
+}
+
+
+void RouteData() {
+    std::unordered_set<WidgetId> to_update{};
+
+    Timestamp rx_time = std::chrono::steady_clock::now();
+    // foreach source
+    for (const auto &source : sources) {
+        const std::vector<DataUpdate> &src_updates = source->PollData();
+        // foreach new update
+        for (const DataUpdate &up : src_updates) {
+            // foreach piece of data in that update
+            for (const DataElement &data : up.new_data){
+                seen_data[data.location] = DataAndTime{data.value, up.rx_time};
+
+                auto more = activeWidgetsThatNeedThisData(data.location);
+                to_update.merge(more);
+            }
+
+        }
+    }
+    for (WidgetId id : to_update){
+        if (!active_widgets.contains(id)){
+            continue;
+        }
+        TimedData packet{};
+        Widget &widg = active_widgets.at(id);
+        for (const DataLocator &loc : widg->WantedData()){
+            packet[loc] = seen_data.at(loc);
+        }
+        widg->ReceiveData(packet);
+    }
+
+  // for (const auto& [key, widget] : active_widgets) {
+  //     for (const DataLocator &wanted : widget->WantedData()) {
+  //         for (const std::pair<std::string, DataUpdate> &name_and_up : updates) {
+  //             const DataUpdate &update = name_and_up.second;
+  //             for (const auto &specific_data : update.new_data) {
+  //                 if (specific_data.location == wanted) {
+  //                     widget->ReceiveData(specific_data);
+  //                 }
+  //             }
+  //         }
+  //     }
+  // }
 }
 
 void Init()
@@ -163,7 +199,7 @@ static bool DataPathMenu(DataLocator &current,
     if (ImGui::MenuItem("receive time")) {
         current.source_name = source_name;
         current.path = {{"recv_time"}};
-        current.special = true;
+        current.is_rx_time = true;
     }
     ImGui::Separator();
 
@@ -173,7 +209,7 @@ static bool DataPathMenu(DataLocator &current,
         if (ImGui::MenuItem(str.c_str(), nullptr, &youSelected)) {
             current.path = chan.path;
             current.source_name = source_name;
-            current.special = false;
+            current.is_rx_time = false;
             return true;
         }
     }

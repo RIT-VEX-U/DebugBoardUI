@@ -11,13 +11,16 @@
 #include <cmrc/cmrc.hpp>
 
 
-CMRC_DECLARE(assets);
 
 #ifdef _WIN32
 #include <winsock.h>
 #endif
 
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
+
+
+CMRC_DECLARE(assets);
+
 namespace Platform {
 static void glfw_error_callback(int error, const char *description) {
   (void)std::fputs(std::format("GLFW Error {}: {}", error, description).c_str(),

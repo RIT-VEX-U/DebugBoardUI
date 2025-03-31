@@ -22,7 +22,7 @@ std::string DataLocator::toString() const {
 }
 
 bool DataLocator::operator==(const DataLocator &other) const {
-  return other.path == path && other.source_name == source_name && other.special == special;
+  return other.path == path && other.source_name == source_name && other.is_rx_time == is_rx_time;
 }
 
 bool DataPath::operator==(const DataPath &other) const {
@@ -56,4 +56,14 @@ size_t DataPathHasher::operator()(const DataPath &path) const {
       combined_hash ^= string_hash + 0x9e3779b9 + (combined_hash << 6) + (combined_hash >> 2);
   }
   return combined_hash;
+}
+
+
+
+size_t DataLocatorHasher::operator()(const DataLocator &obj) const {
+    size_t h1 = DataPathHasher{}(obj.path);
+    size_t h2 = std::hash<std::string>{}(obj.source_name);
+    size_t h3 = std::hash<bool>{}(obj.is_rx_time);
+    size_t h = h1 ^ (h2 << 1); // Combine hash values
+    return h ^ (h3<<1);
 }

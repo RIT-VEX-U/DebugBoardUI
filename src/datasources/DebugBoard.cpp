@@ -161,12 +161,12 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
     // curr_node is a data value
 
     DataLocator const loc =
-        DataLocator{.source_name = Name(), .path = sup.path, .special = false};
+        DataLocator{.source_name = Name(), .path = sup.path, .is_rx_time = false};
     if (sup.type_hint == DataPrimitiveType::Float) {
       if (curr_node.is_number()) {
         // we're good
         double value = curr_node;
-        updates.push_back(DataElement{.path = loc, .value = value});
+        updates.push_back(DataElement{.location = loc, .value = value});
 
       } else {
         std::println("{}", curr_node.dump());
@@ -180,7 +180,7 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
       if (curr_node.is_number()) {
         // we're good
         size_t value = curr_node;
-        updates.push_back(DataElement{.path = loc, .value = (uint64_t)value});
+        updates.push_back(DataElement{.location = loc, .value = (uint64_t)value});
 
       } else {
         std::println("Expected uint at but got something else\n");

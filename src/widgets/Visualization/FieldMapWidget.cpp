@@ -7,7 +7,7 @@ FieldMapWidget::FieldMapWidget(WidgetId id, const std::string & /*field_image_pa
     : WidgetImpl(id)
     , flipDiagonally(false)
 {}
-void FieldMapWidget::ReceiveData(DataElement data) {}
+void FieldMapWidget::ReceiveData(TimedData data) {}
 
 void FieldMapWidget::Draw(bool *should_close) {
   if (ImGui::Begin("Field Map", should_close)) {

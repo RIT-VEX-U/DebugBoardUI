@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -37,12 +38,19 @@ struct DataPathHasher {
 struct DataLocator {
   std::string source_name;
   DataPath path;
-  bool special;
+  bool is_rx_time;
 
   std::string toString() const;
   bool isEmpty() const;
   bool operator==(const DataLocator &) const;
 };
+// Hasher for DataLocator. Allows use in sets
+struct DataLocatorHasher{
+    size_t operator()(const DataLocator &) const;
+};
+
+using DataLocationSet = std::unordered_set<DataLocator, DataLocatorHasher>;
+
 
 /**
  * Types that can be made available by sources.
@@ -74,11 +82,18 @@ struct DataElementDescriptionHash {
 };
 
 struct DataElement {
-  DataLocator path;
+  DataLocator location;
   DataPrimitive value;
 };
 
 using Timestamp = std::chrono::time_point<std::chrono::steady_clock>;
+
+struct DataAndTime{
+    DataPrimitive value;
+    Timestamp time;
+};
+
+using TimedData = std::unordered_map<DataLocator, DataAndTime, DataLocatorHasher>;
 
 struct DataUpdate {
   Timestamp rx_time;

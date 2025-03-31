@@ -27,6 +27,19 @@ public:
       Offset = 0;
     }
   }
+
+  value_type Oldest(){return Data[Offset];}
+  value_type Recent(){
+      size_t i = Offset;
+      if (i == 0){
+          i = Data.size() - 1;
+      } else {
+          i = i-1;
+      }
+      return Data[i];
+
+  }
+
 };
 
 // utility structure for realtime plot

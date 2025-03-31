@@ -14,18 +14,18 @@ class WidgetImpl {
 public:
   explicit WidgetImpl(WidgetId id);
 
-  virtual void ReceiveData(DataElement data) = 0;
+  virtual void ReceiveData(TimedData data) = 0;
   // Use ImGui to draw a this widget
   virtual void Draw(bool *should_close) = 0;
 
   WidgetId Id() const;
 
-  const std::vector<DataLocator> &WantedData() const;
+  const DataLocationSet &WantedData() const;
 
 protected:
-  void RegisterDataCallback(const std::vector<DataLocator> &wanted_data);
+  void RegisterDataCallback(const DataLocationSet &wanted_data);
 
 private:
   WidgetId id_;
-  std::vector<DataLocator> wanted_data_;
+  DataLocationSet wanted_data_;
 };

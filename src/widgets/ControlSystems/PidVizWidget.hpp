@@ -7,7 +7,7 @@ class PidVizWidget : public WidgetImpl {
 public:
   explicit PidVizWidget(WidgetId id);
 
-  void ReceiveData(DataElement data) override;
+  void ReceiveData(TimedData data) override;
   // Use ImGui to draw a this widget
   void Draw(bool *should_close) override;
 
