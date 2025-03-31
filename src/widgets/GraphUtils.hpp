@@ -23,8 +23,8 @@ public:
   }
   void Erase() {
     if (!Data.empty()) {
-      Data.shrink(0);
-      Offset = 0;
+        Data.resize(0);
+        Offset = 0;
     }
   }
 

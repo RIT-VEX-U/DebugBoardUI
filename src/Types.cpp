@@ -58,12 +58,25 @@ size_t DataPathHasher::operator()(const DataPath &path) const {
   return combined_hash;
 }
 
-
-
 size_t DataLocatorHasher::operator()(const DataLocator &obj) const {
     size_t h1 = DataPathHasher{}(obj.path);
     size_t h2 = std::hash<std::string>{}(obj.source_name);
     size_t h3 = std::hash<bool>{}(obj.is_rx_time);
     size_t h = h1 ^ (h2 << 1); // Combine hash values
     return h ^ (h3<<1);
+}
+
+std::expected<double, DataRetrieveFailure> getDoubleAt(const DataLocator &loc, const TimedData &data)
+{
+    if (!data.contains(loc)) {
+        return std::unexpected{DataRetrieveFailure::KeyNotFound};
+    }
+
+    try {
+        const DataAndTime &dat = data.at(loc);
+        double value = std::get<double>(dat.value);
+        return value;
+    } catch (std::bad_variant_access &e) {
+        return std::unexpected(DataRetrieveFailure::ValueWrongType);
+    }
 }

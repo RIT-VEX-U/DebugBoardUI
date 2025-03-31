@@ -17,7 +17,16 @@ GenericGrapher::GenericGrapher(WidgetId id)
 }
 
 void GenericGrapher::ReceiveData(TimedData new_data) {
-    Timestamp ts{};
+    std::expected<double, DataRetrieveFailure> time = getDoubleAt(time_loc_, new_data);
+    if (!time.has_value()) {
+        for (auto [k, v] : new_data) {
+            // std::println("{}:{}", k, v);
+        }
+        std::println("Ignoring data packet, no time: {}", (int) time.error());
+        return;
+    }
+    double t = time.value();
+    time_data_.AddPoint(t);
     for (AxisData &axd : data_){
         if (axd.loc.isEmpty() ){
             continue;
@@ -25,12 +34,9 @@ void GenericGrapher::ReceiveData(TimedData new_data) {
         if (!new_data.contains(axd.loc)){
             throw new std::logic_error(std::format("I requested {} to be included in this update but didnt get it", axd.loc.toString()));
         } else {
-            ts = new_data[axd.loc].time;
-            std::chrono::duration<float> t_seconds(ts - creation_time_);
-
             const DataPrimitive &value = new_data[axd.loc].value;
             double vald = std::get<double>(value);
-            axd.data.AddPoint(Pt{t_seconds.count(), (float)vald});
+            axd.data.AddPoint((float) vald);
         }
     }
 
@@ -53,16 +59,11 @@ void GenericGrapher::Draw(bool *should_close) {
             data_.push_back(AxisData{
                 .secondary_y = false,
                 .loc = DataLocator{},
-                .data = ScrollingBuffer<Pt>{},
+                .data = ScrollingBuffer<float>{},
             });
         }
         if (reregister) {
-            DataLocationSet wanted_data{};
-            wanted_data.reserve(data_.size());
-            for (const auto &series : data_) {
-                wanted_data.emplace(series.loc);
-            }
-            RegisterDataCallback(wanted_data);
+            ClearAndReregister();
         }
   }
   ImGui::End();
@@ -74,35 +75,54 @@ void GenericGrapher::Draw(bool *should_close) {
 
       if (ImPlot::BeginPlot("Scrolling", ImVec2(-1, 250))) {
           ImPlot::SetupAxes("Scrolling Title a", "Scrolling Title b", flags, flags);
-          if (data_.size() !=0){
-          // float then = time_.Oldest();
-          float now = data_[0].data.Recent().x;
-          float old = data_[0].data.Oldest().x;
-          old = min(old, now- 5.0);
-          ImPlot::SetupAxisLimits(ImAxis_X1, old, now, ImGuiCond_Always);
-          ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
-          ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5F);
-          for (auto &i : data_) {
-              const AxisData &mydata = i;
-              if (mydata.data.Data.empty() || i.loc.isEmpty()) {
-                  // skip invalid guys
-                  continue;
+          if (data_.size() != 0) {
+              // float then = time_.Oldest();
+              float now = time_data_.Recent();
+              float old = time_data_.Oldest();
+              old = min(old, now - 5.0F);
+              ImPlot::SetupAxisLimits(ImAxis_X1, old, now, ImGuiCond_Always);
+              ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
+              ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5F);
+
+              for (auto &i : data_) {
+                  const AxisData &mydata = i;
+                  if (mydata.data.Data.empty() || i.loc.isEmpty()) {
+                      // skip invalid guys
+                      continue;
+                  }
+
+                  ImPlot::PlotLine("Data",
+                                   time_data_.Data.data(),
+                                   mydata.data.Data.data(),
+                                   mydata.data.Data.size(),
+                                   0,
+                                   mydata.data.Offset,
+                                   sizeof(float));
+                  // ImPlot::PlotLine("Data",
+                  //                  time_.Data.data(),
+                  //                  mydata.data.Data.data(),
+                  //                  mydata.data.Data.size(),
+                  //                  0,
+                  //                  mydata.data.Offset,
+                  //                  2 * sizeof(float));
               }
-
-
-              ImPlot::PlotLine("Data", &mydata.data.Data[0].x, &mydata.data.Data[0].y,
-                               mydata.data.Data.size(), 0, mydata.data.Offset, 2 * sizeof(float));
-              // ImPlot::PlotLine("Data",
-              //                  time_.Data.data(),
-              //                  mydata.data.Data.data(),
-              //                  mydata.data.Data.size(),
-              //                  0,
-              //                  mydata.data.Offset,
-              //                  2 * sizeof(float));
-          }
           }
           ImPlot::EndPlot();
       }
   }
   ImGui::End();
+}
+
+void GenericGrapher::ClearAndReregister()
+{
+    DataLocationSet wanted_data{};
+    wanted_data.reserve(data_.size());
+    for (auto &series : data_) {
+        wanted_data.emplace(series.loc);
+        series.data.Erase();
+    }
+    wanted_data.emplace(time_loc_);
+    time_data_.Erase();
+
+    RegisterDataCallback(wanted_data);
 }

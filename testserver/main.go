@@ -247,6 +247,7 @@ func main() {
 		Fields: []Schema{
 			DoubleSchema{"Voltage(V)"},
 			DoubleSchema{"Current(A)"},
+			DoubleSchema{"Time(s)"},
 		},
 	}
 	c2 := DoubleSchema{
@@ -268,6 +269,10 @@ func main() {
 		d1 := StructData{
 			Name_: "motor",
 			Val: []Data{
+				NumberData{
+					Name_: "Time(s)",
+					Val: float32(t),
+				},
 				NumberData{
 					Name_: "Voltage(V)",
 					Val:   2 + float32(math.Sin(t)),
