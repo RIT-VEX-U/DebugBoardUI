@@ -17,7 +17,6 @@ Data init(const std::string &window_title);
 void prerender(Data);
 /**
  * Called after building the ImGui UI
- *
  */
 void postrender(Data);
 void cleanup(Data);

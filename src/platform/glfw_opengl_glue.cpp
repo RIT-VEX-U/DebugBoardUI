@@ -4,7 +4,6 @@
 #include "implot/implot.h"
 #include "implot/implot_internal.h"
 #include "platform/glue.hpp"
-#include <GL/gl.h>
 #include <cstdio>
 #include <format>
 #include "stb/stb_image.h"
@@ -17,7 +16,6 @@
 #endif
 
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
-
 
 CMRC_DECLARE(assets);
 
