@@ -116,8 +116,7 @@ static void parseChannel(DataSource::DataElementSet &sofar,
 }
 
 void DebugBoard::HandleAdvertise(const json &json_obj) {
-  std::string ms = json_obj.dump();
-  std::println("advertise: %s", ms);
+  std::println("advertise: {}", json_obj.dump());
   if (!json_obj.contains("channels") || !json_obj["channels"].is_array()) {
     return;
   }
@@ -160,8 +159,8 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
     // if we got here, we have followed the thing to its end and havent skipped
     // curr_node is a data value
 
-    DataLocator const loc =
-        DataLocator{.source_name = Name(), .path = sup.path, .is_rx_time = false};
+    DataLocator const loc = DataLocator{
+        .source_name = Name(), .path = sup.path, .is_rx_time = false};
     if (sup.type_hint == DataPrimitiveType::Float) {
       if (curr_node.is_number()) {
         // we're good
@@ -180,7 +179,8 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
       if (curr_node.is_number()) {
         // we're good
         size_t value = curr_node;
-        updates.push_back(DataElement{.location = loc, .value = (uint64_t)value});
+        updates.push_back(
+            DataElement{.location = loc, .value = (uint64_t)value});
 
       } else {
         std::println("Expected uint at but got something else\n");

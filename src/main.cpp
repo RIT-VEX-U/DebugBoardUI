@@ -4,11 +4,9 @@
 #include "datasources/DebugBoard.hpp"
 #include <cstdio>
 #include <memory>
-
+#include <print>
 int main() {
-  auto board = std::make_shared<DebugBoardWebsocket>("ws://localhost:8080/ws");
-  // auto board =
-  // std::make_shared<DebugBoardWebsocket>("ws://129.21.144.84/ws");
+  std::println("Init");
   Workspace::Init();
   Workspace::AddSource(board);
 
