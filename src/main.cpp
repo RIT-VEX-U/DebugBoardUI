@@ -6,11 +6,11 @@
 #include <memory>
 #include <print>
 int main() {
+  Workspace::Init();
   std::println("Init");
   // auto board =
   // std::make_shared<DebugBoardWebsocket>("ws://localhost:8080/ws");
   auto board = std::make_shared<DebugBoardWebsocket>("ws://10.115.37.28/ws");
-  Workspace::Init();
   Workspace::AddSource(board);
 
   Platform::Data pdata = Platform::init("Debug Board UI");
