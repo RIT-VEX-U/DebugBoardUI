@@ -18,6 +18,7 @@ public:
   std::optional<DataError> HandleData(const json &json_obj);
 
   std::vector<DataUpdate> PollData() override;
+  void SendData(std::vector<DataUpdate> data) override;
   DataElementSet ProvidedData() const override;
 
   void feedPacket(const std::string &json_obj);
@@ -38,6 +39,7 @@ public:
 
   std::string Name() const override;
   std::vector<DataUpdate> PollData() override;
+  void SendData(std::vector<DataUpdate> data) override;
   void Draw() override;
 
 private:

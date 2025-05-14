@@ -17,6 +17,7 @@ GenericGrapher::GenericGrapher(WidgetId id)
 void GenericGrapher::ReceiveData(TimedData new_data) {
   std::expected<double, DataRetrieveFailure> time =
       getDoubleAt(time_loc_, new_data);
+  std::printf("time path: %s\n", time_loc_.toString().c_str());
   if (!time.has_value()) {
     for (auto [k, v] : new_data) {
       // std::println("{}:{}", k, v);
@@ -55,6 +56,14 @@ void GenericGrapher::Draw(bool *should_close) {
       ImGui::SameLine();
       ImGui::TextUnformatted(
           std::format("{} samples", data_[i].data.Data.size()).c_str());
+      ImGui::SameLine();
+      if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer))) {
+        SendingData data_to_send{
+            .data = input_buffer,
+            .loc = data_[i].loc,
+        };
+        input_data.push_back(data_to_send);
+      }
     }
     if (ImGui::Button("Add Series")) {
       data_.push_back(AxisData{
@@ -63,6 +72,10 @@ void GenericGrapher::Draw(bool *should_close) {
           .data = ScrollingBuffer<float>{},
       });
     }
+    // if (ImGui::InputFloat("Float", curr_data)) {
+    //   float new_data = *curr_data;
+    //   input_data.push_back(new_data);
+    // }
     if (reregister) {
       ClearAndReregister();
     }
@@ -70,6 +83,7 @@ void GenericGrapher::Draw(bool *should_close) {
   ImGui::End();
 
   auto min = [](float a, float b) { return (a < b) ? a : b; };
+  auto max = [](float a, float b) { return (a > b) ? a : b; };
   if (ImGui::Begin(plotname.c_str())) {
     ImPlotAxisFlags const flags = 0;
     // ImPlotAxisFlags_NoTickLabels | ImPlotAxisFlags_NoTickMarks;
@@ -78,9 +92,13 @@ void GenericGrapher::Draw(bool *should_close) {
       ImPlot::SetupAxes("Scrolling Title a", "Scrolling Title b", flags, flags);
       if (!data_.empty() && !time_data_.Data.empty()) {
         // float then = time_.Oldest();
+        history = 60;
         float now = time_data_.Recent();
         float old = time_data_.Oldest();
-        old = min(old, now - 5.0F);
+        if (now - history > 0) {
+          old = now - history;
+        }
+        std::println("old: {} now: {}", old, now);
         ImPlot::SetupAxisLimits(ImAxis_X1, old, now, ImGuiCond_Always);
         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5F);
@@ -91,7 +109,7 @@ void GenericGrapher::Draw(bool *should_close) {
             // skip invalid guys
             continue;
           }
-
+          // whatthefuck im gonna data all over this data
           ImPlot::PlotLine("Data", time_data_.Data.data(),
                            mydata.data.Data.data(), mydata.data.Data.size(), 0,
                            mydata.data.Offset, sizeof(float));

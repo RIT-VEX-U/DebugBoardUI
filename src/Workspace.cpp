@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
 namespace Workspace {
 static WidgetRegistry reg;
 static std::vector<std::shared_ptr<DataSource>> sources = {};
@@ -56,6 +57,10 @@ void RouteData() {
       // foreach piece of data in that update
       for (const DataElement &data : up.new_data) {
         seen_data[data.location] = DataAndTime{data.value, up.rx_time};
+        std::println("seen data location after being set: {}",
+                     data.location.toString());
+        std::println("seen data after being set: {}",
+                     getDoubleAt(data.location, seen_data).value_or(0));
 
         auto more = activeWidgetsThatNeedThisData(data.location);
         to_update.merge(more);
@@ -69,13 +74,16 @@ void RouteData() {
     TimedData packet{};
     Widget &widg = active_widgets.at(id);
     for (const DataLocator &loc : widg->WantedData()) {
+      std::println("I want: {}", loc.toString());
       if (loc.isEmpty() || !seen_data.contains(loc)) {
         std::println("REGISTERED UPDATES FROM EMPTY CHANNEL or CHANNEL THAT "
                      "DOESNT EXIST\n");
         continue;
       }
+
       packet[loc] = seen_data.at(loc);
     }
+
     widg->ReceiveData(packet);
   }
 

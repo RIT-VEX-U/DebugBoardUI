@@ -1,13 +1,13 @@
 #pragma once
 #include <chrono>
 #include <cstdint>
+#include <expected>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
-#include <expected>
 
 struct DataError {
   std::string message;
@@ -46,12 +46,11 @@ struct DataLocator {
   bool operator==(const DataLocator &) const;
 };
 // Hasher for DataLocator. Allows use in sets
-struct DataLocatorHasher{
-    size_t operator()(const DataLocator &) const;
+struct DataLocatorHasher {
+  size_t operator()(const DataLocator &) const;
 };
 
 using DataLocationSet = std::unordered_set<DataLocator, DataLocatorHasher>;
-
 
 /**
  * Types that can be made available by sources.
@@ -87,57 +86,48 @@ struct DataElement {
   DataPrimitive value;
 };
 
-template<>
-struct std::formatter<DataLocator>
-{
-    constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+template <> struct std::formatter<DataLocator> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 };
 
-template<>
-struct std::formatter<DataPrimitive>
-{
-    constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+template <> struct std::formatter<DataPrimitive> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-    auto format(const DataPrimitive &obj, std::format_context &ctx) const
-    {
-        return std::format_to(ctx.out(), "Value");
-        // std::visit<>([&ctx](const auto &
-        // val) { return std::format_to(ctx.out(), "Value: {}", val); },
-        // obj);
-    }
+  auto format(const DataPrimitive &obj, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "Value");
+    // std::visit<>([&ctx](const auto &
+    // val) { return std::format_to(ctx.out(), "Value: {}", val); },
+    // obj);
+  }
 };
 
-template<>
-struct std::formatter<DataElement>
-{
-    constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+template <> struct std::formatter<DataElement> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-    auto format(const DataElement &obj, std::format_context &ctx) const
-    {
-        return std::format_to(ctx.out(), "ASDF");
-        //std::format_to(ctx.out(), "Location: {}, Value: {}", obj.location, obj.value);
-    }
+  auto format(const DataElement &obj, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "ASDF");
+    // std::format_to(ctx.out(), "Location: {}, Value: {}", obj.location,
+    // obj.value);
+  }
 };
 
 using Timestamp = std::chrono::time_point<std::chrono::steady_clock>;
 
-struct DataAndTime{
-    DataPrimitive value;
-    Timestamp time;
+struct DataAndTime {
+  DataPrimitive value;
+  Timestamp time;
 };
 
-template<>
-struct std::formatter<DataAndTime>
-{
-    constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+template <> struct std::formatter<DataAndTime> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-    auto format(const DataAndTime &obj, std::format_context &ctx) const
-    {
-        return std::format_to(ctx.out(), "DataAndTime{{ {} }}", obj.value);
-    }
+  auto format(const DataAndTime &obj, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "DataAndTime{{ {} }}", obj.value);
+  }
 };
 
-using TimedData = std::unordered_map<DataLocator, DataAndTime, DataLocatorHasher>;
+using TimedData =
+    std::unordered_map<DataLocator, DataAndTime, DataLocatorHasher>;
 
 struct DataUpdate {
   Timestamp rx_time;
@@ -154,6 +144,7 @@ public:
   virtual std::string Name() const = 0;
   virtual DataElementSet ProvidedData() const = 0;
   virtual std::vector<DataUpdate> PollData() = 0;
+  virtual void SendData(std::vector<DataUpdate> data) = 0;
 
   virtual void Draw() = 0;
 };
@@ -168,9 +159,9 @@ public:
  */
 bool DataLocationSelector(const char *name, DataLocator &current);
 
-
-enum class DataRetrieveFailure{
-    KeyNotFound,
-    ValueWrongType,
+enum class DataRetrieveFailure {
+  KeyNotFound,
+  ValueWrongType,
 };
-std::expected<double, DataRetrieveFailure> getDoubleAt(const DataLocator&loc, const TimedData& data);
+std::expected<double, DataRetrieveFailure> getDoubleAt(const DataLocator &loc,
+                                                       const TimedData &data);

@@ -29,6 +29,8 @@ std::vector<DataUpdate> DebugBoard::PollData() {
   return updates;
 }
 
+void DebugBoard::SendData(std::vector<DataUpdate> data) {}
+
 DebugBoard::DataElementSet DebugBoard::ProvidedData() const {
   return current_channels;
 }
@@ -226,6 +228,15 @@ std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
   ws_->dispatch([&](const std::string &msg) { DebugBoard::feedPacket(msg); });
 
   return DebugBoard::PollData();
+}
+
+void DebugBoardWebsocket::SendData(std::vector<DataUpdate> data) {
+  // create a json based on data and the json it is receiving, convert it to a
+  // string and send it to the websocket
+  std::string send_message;
+
+  ws_->send(send_message);
+  DebugBoard::PollData();
 }
 
 std::string DebugBoardWebsocket::Name() const { return "VDB@" + ws_url_; }
