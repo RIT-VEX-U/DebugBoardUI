@@ -86,6 +86,12 @@ struct DataElement {
   DataPrimitive value;
 };
 
+//Struct for data we want to send that we got from the grapher
+struct SendingData {
+  std::string data;
+  DataLocator loc = {};
+};
+
 template <> struct std::formatter<DataLocator> {
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 };
@@ -118,6 +124,7 @@ struct DataAndTime {
   Timestamp time;
 };
 
+
 template <> struct std::formatter<DataAndTime> {
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
@@ -144,7 +151,7 @@ public:
   virtual std::string Name() const = 0;
   virtual DataElementSet ProvidedData() const = 0;
   virtual std::vector<DataUpdate> PollData() = 0;
-  virtual void SendData(std::vector<DataUpdate> data) = 0;
+  virtual void SendData(SendingData data_to_send) = 0;
 
   virtual void Draw() = 0;
 };

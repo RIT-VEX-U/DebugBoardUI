@@ -159,10 +159,10 @@ void prerender(Data /*data*/)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiWindowFlags const window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
-                                          | ImGuiWindowFlags_MenuBar
-                                          | ImGuiWindowFlags_DockNodeHost;
+    //set up the flags we want to use on all our windows
+    ImGuiWindowFlags const window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse| ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_DockNodeHost;
     ImGuiID const imid = 0;
+    //docks the gui over the main screen of the computer
     ImGui::DockSpaceOverViewport(imid, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 void postrender(Data pdata)

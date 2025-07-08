@@ -21,11 +21,15 @@ public:
   WidgetId Id() const;
 
   const DataLocationSet &WantedData() const;
+  const SendingData &DataToSend() const;
+  void ClearSentData();
 
 protected:
   void RegisterDataCallback(const DataLocationSet &wanted_data);
+  void SendToWebSocketCallback(const SendingData &data_to_send);
 
 private:
   WidgetId id_;
   DataLocationSet wanted_data_;
+  SendingData data_to_send_;
 };

@@ -14,6 +14,7 @@ std::string DataPath::toString() const {
   return accum;
 }
 bool DataLocator::isEmpty() const { return source_name.empty(); };
+
 std::string DataLocator::toString() const {
   if (isEmpty()) {
     return "(invalid location)";

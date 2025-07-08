@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include "datasources/DebugBoard.hpp"
 
 namespace Workspace {
 static WidgetRegistry reg;
@@ -33,58 +34,86 @@ static WidgetId NextWidgetId() {
   widget_id_count++;
   return widget_id_count;
 }
-
+/**
+ * @return a set of widgets that need the data at the data locator
+ * @param loc the data locator for the data that the widgets need
+ */
 std::unordered_set<WidgetId> activeWidgetsThatNeedThisData(DataLocator loc) {
+  //the set of widgets that need the data
   std::unordered_set<WidgetId> needies{};
+  //for each id and widget in our active widgets
   for (const auto &[id, widget] : active_widgets) {
+    //check if the widget wants the data we have
     if (widget->WantedData().contains(loc)) {
+      //put the widget into our set
       needies.emplace(id);
     }
   }
 
   return needies;
 }
-
+/**
+ * Routes data to where it needs to be
+ */
 void RouteData() {
+  //widget we want to update with the data 
   std::unordered_set<WidgetId> to_update{};
 
+  //the time that the data was recieved at
   Timestamp rx_time = std::chrono::steady_clock::now();
-  // foreach source
+
+  // foreach data source
   for (const auto &source : sources) {
+    //poll the data at said source
     const std::vector<DataUpdate> &src_updates = source->PollData();
     // foreach new update
     for (const DataUpdate &up : src_updates) {
       // foreach piece of data in that update
       for (const DataElement &data : up.new_data) {
+        //get said data's value and the time when it was received
         seen_data[data.location] = DataAndTime{data.value, up.rx_time};
-        std::println("seen data location after being set: {}",
-                     data.location.toString());
-        std::println("seen data after being set: {}",
-                     getDoubleAt(data.location, seen_data).value_or(0));
-
+        //get the widgets that need said data
         auto more = activeWidgetsThatNeedThisData(data.location);
+        //merge those widgets with our list of widgets we need to update
         to_update.merge(more);
       }
     }
   }
+  //foreach widget id in our list of widgets to update
   for (WidgetId id : to_update) {
+    //check if the widget is real
     if (!active_widgets.contains(id)) {
       continue;
     }
+    //the packet of data we need to send to the widget
     TimedData packet{};
+    //get the active widget at the id
     Widget &widg = active_widgets.at(id);
+    //foreach data locator in our widget's wanted data
     for (const DataLocator &loc : widg->WantedData()) {
-      std::println("I want: {}", loc.toString());
+      // std::println("I want: {}", loc.toString());
+      //check if the data is real and we have seen it
       if (loc.isEmpty() || !seen_data.contains(loc)) {
         std::println("REGISTERED UPDATES FROM EMPTY CHANNEL or CHANNEL THAT "
                      "DOESNT EXIST\n");
         continue;
       }
-
+      //get the data that we need from what we have seen and put it into the packet
       packet[loc] = seen_data.at(loc);
     }
-
+    //send the data we got from the websocket to the widget
     widg->ReceiveData(packet);
+  }
+  
+  //foreach widget id in all of our active widgets
+  for(auto [id, widget]: active_widgets){
+    //if the widget has data to send 
+    if(!widget->DataToSend().loc.isEmpty()){
+      for(const auto &source: sources){
+        source.get()->SendData(widget->DataToSend());
+      }
+      widget->ClearSentData();
+    }
   }
 
   // for (const auto& [key, widget] : active_widgets) {
@@ -163,12 +192,16 @@ static void DrawNewDatasourceUI() {
   }
   ImGui::End();
 }
-
+/**
+ * Basic Drawing of our widgets on the gui
+ */
 void Draw() {
+  //draws specific startup widgets
   DrawMenuBar();
 
   DrawNewWidgetUI();
   DrawNewDatasourceUI();
+
   for (const auto &source : sources) {
     source->Draw();
   }

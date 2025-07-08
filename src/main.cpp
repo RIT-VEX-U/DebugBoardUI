@@ -10,7 +10,7 @@ int main() {
   std::println("Init");
   // auto board =
   // std::make_shared<DebugBoardWebsocket>("ws://localhost:8080/ws");
-  auto board = std::make_shared<DebugBoardWebsocket>("ws://10.115.37.28/ws");
+  auto board = std::make_shared<DebugBoardWebsocket>("ws://192.168.1.89/ws");
   Workspace::AddSource(board);
   Workspace::Init();
 
@@ -19,6 +19,7 @@ int main() {
   while (!Platform::shouldclose(pdata)) {
     // Polls sources and notifies widgets
     Workspace::RouteData();
+    
     Platform::prerender(pdata);
 
     Workspace::Draw();
