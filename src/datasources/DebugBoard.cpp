@@ -198,28 +198,37 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
         .source_name = Name(), 
         .path = datadesc.path, 
         .is_rx_time = false};
+        
     if (datadesc.type_hint == DataPrimitiveType::Float) {
       if (curr_node.is_number()) {
         // we're good
         double value = curr_node;
-        updates.push_back(DataElement{.location = loc, .value = value});
+        updates.push_back(DataElement{.location = loc, .value = value, .type = datadesc.type_hint});
 
       } else {
         std::println("Expected double at {} but got something else", curr_node.dump());
       }
 
     } else if (datadesc.type_hint == DataPrimitiveType::Int) {
-      std::println("INT UNIMPLEMENTED {}:{}", __FILE__, __LINE__);
-      return DataError{"INT Handler unimplemented"};
+      std::println("INT WIP {}:{}", __FILE__, __LINE__);
+      if (curr_node.is_number()) {
+        // we're good
+        int value = curr_node;
+        updates.push_back(
+            DataElement{.location = loc, .value = (int64_t)value, .type = datadesc.type_hint});
+        }
+      else {
+        return DataError{std::format("Expected a Uint at '{}' but got {}", datadesc.path.toString(), curr_node.dump())};
+      }
+      // return DataError{"INT Handler unimplemented"};
     } else if (datadesc.type_hint == DataPrimitiveType::Uint) {
       if (curr_node.is_number()) {
         // we're good
         size_t value = curr_node;
         updates.push_back(
-            DataElement{.location = loc, .value = (uint64_t)value});
+            DataElement{.location = loc, .value = (uint64_t)value, .type = datadesc.type_hint});
 
       } else {
-        std::println("Expected uint at but got something else\n");
         return DataError{std::format("Expected a Uint at '{}' but got {}", datadesc.path.toString(), curr_node.dump())};
       }
     } else {
@@ -282,8 +291,10 @@ std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
   // printf("channel schema found: \n%s\n\n", nlohmann::to_string(channel_schema).c_str());
 
   nlohmann::ordered_json data_schema = json::object();
+  bool invalid_data = false;
   std::function<void(nlohmann::ordered_json &current_node, const json &o)>walk_schema;
   walk_schema = [&](nlohmann::ordered_json &current_node, const json &o) {
+
     //channels should have a type and a name
     if (!o.contains("type") || !o.contains("name")) {
       // don't know how to process
@@ -322,14 +333,37 @@ std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
       }
     }
     else if(str_name == data_to_format.loc.path.parts[data_to_format.loc.path.parts.size()-1]){
-      next_node = data_to_format.data;
+      //can we please pretend that this needs to be a data primitive and that I didn't do all this work for nothing
+      try{
+      if(data_to_format.data_type == Float){
+        auto next_node_data = std::stof(std::get<std::string>(data_to_format.data));
+        next_node = next_node_data;
+      }
+      else if(data_to_format.data_type == Int){
+        auto next_node_data = std::stoi(std::get<std::string>(data_to_format.data));
+        next_node = next_node_data;
+      }
+      else if(data_to_format.data_type == Uint){
+        auto next_node_data = std::stoul(std::get<std::string>(data_to_format.data));
+        next_node = next_node_data;
+      }
+      else if(data_to_format.data_type == String){
+        auto next_node_data = std::get<std::string>(data_to_format.data);
+        next_node = next_node_data;
+      }
+      }
+      catch (const std::invalid_argument  e){
+        printf("invalid data entered, scrapping data\n");
+        invalid_data = true;
+      }
+      
+      
     }
     else{
       next_node = "N/A";
     }
     // println("current node after insertion: {}\n", nlohmann::to_string(current_node));
   };
-  
   walk_schema(data_schema, channel_schema);
   // println("schema json: \n{}\n\n", nlohmann::to_string(data_schema));
 
@@ -339,7 +373,10 @@ std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
     {"name", data_to_format.loc.path.parts[1]},
     {"data", data_schema}
   };
-  printf("created full data json: \n%s\n\n", nlohmann::to_string(full_data_json).c_str());
+  // printf("created full data json: \n%s\n\n", nlohmann::to_string(full_data_json).c_str());
+  if(invalid_data){
+    return "oops";
+  }
   
 
 
@@ -349,12 +386,14 @@ std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
  * sends the SendingData to the debug board's websocket
  * @param data_to_send the data to send to the websocket
  */
-void DebugBoardWebsocket::SendData(SendingData data_to_send) {
-
+void DebugBoardWebsocket::SendData(SendingData &data_to_send) {
   std::string data_json_string = this->FormatSendingData(data_to_send);
-  printf("sending data to the websocket\n");
-  ws_->send(data_json_string);
-  ws_->poll();
+  data_to_send.waiting_to_send = false;
+  if(data_json_string != "oops"){
+    printf("sending data to the websocket\n");
+    ws_->send(data_json_string);
+    ws_->poll();
+  }
 }
 
 std::string DebugBoardWebsocket::Name() const { return "VDB@" + ws_url_; }

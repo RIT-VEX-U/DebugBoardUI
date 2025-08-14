@@ -1,12 +1,14 @@
 #include "Widget.hpp"
 #include "../Types.hpp"
 #include <vector>
+#include <print>
 
 WidgetImpl::WidgetImpl(WidgetId id) : id_(id) {}
 
 WidgetId WidgetImpl::Id() const { return id_; }
 
 void WidgetImpl::RegisterDataCallback(const DataLocationSet &wanted_data) {
+  std::println("storing wanted data at the router");
   wanted_data_ = wanted_data;
 }
 
@@ -18,11 +20,6 @@ const DataLocationSet &WidgetImpl::WantedData() const {
   return wanted_data_;
 }
 
-const SendingData &WidgetImpl::DataToSend() const {
+SendingData &WidgetImpl::DataToSend() {
   return data_to_send_;
-}
-
-void WidgetImpl::ClearSentData() {
-  data_to_send_.data.clear();
-  data_to_send_.loc.source_name.clear();
 }

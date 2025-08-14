@@ -21,8 +21,7 @@ public:
   WidgetId Id() const;
 
   const DataLocationSet &WantedData() const;
-  const SendingData &DataToSend() const;
-  void ClearSentData();
+  SendingData &DataToSend();
 
 protected:
   void RegisterDataCallback(const DataLocationSet &wanted_data);

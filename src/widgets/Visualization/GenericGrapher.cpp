@@ -25,7 +25,6 @@ GenericGrapher::GenericGrapher(WidgetId id)
 void GenericGrapher::ReceiveData(TimedData new_data) {
   //gets the time data
   std::expected<double, DataRetrieveFailure> time = getDoubleAt(time_loc_, new_data);
-  // std::printf("time path: %s\n", time_loc_.toString().c_str());
   //double check that the time set actually has a time
   if (!time.has_value()) {
     for (auto [k, v] : new_data) {
@@ -49,10 +48,22 @@ void GenericGrapher::ReceiveData(TimedData new_data) {
     else {
       //gets the data value from the data locator
       const DataPrimitive &value = new_data[axd.loc].value;
-      //gets the value from the data
-      double vald = std::get<double>(value);
-      //adds the value of the data as a point to the grapher's axis
-      axd.data.AddPoint((float)vald);
+      const DataPrimitiveType &type = new_data[axd.loc].type;
+      double vald;
+      if(type == DataPrimitiveType::Float){
+        vald = std::get<double>(value);
+        axd.data.AddPoint((float)vald);
+      } else if(type == DataPrimitiveType::Int){
+        std::println("int received, plot might not be accurate");
+        vald = (double)std::get<int64_t>(value);
+        axd.data.AddPoint((float)vald);
+      } else if(type == DataPrimitiveType::Uint){
+        std::println("uint received, plot might not be accurate");
+        vald = (double)std::get<uint64_t>(value);\
+        axd.data.AddPoint((float)vald);
+      } else if(type == DataPrimitiveType::String){
+        std::println("string received, not adding to plot");
+      }
     }
   }
 }
@@ -71,11 +82,21 @@ void GenericGrapher::Draw(bool *should_close) {
 
     ImGui::Separator();
     bool reregister = false;
+    //sets up input buffers for inputting text later
+    if(input_buffers.size() < data_.size()){
+      size_t old_size = input_buffers.size();
+      input_buffers.resize(data_.size());
+
+      for (size_t i = old_size; i < data_.size(); ++i) {
+        input_buffers[i].fill('\0');
+      }
+    }
+
     //loops through all the axis data
     for (size_t i = 0; i < data_.size(); i++) {
       //Data selector for the data we are looking for
       std::string const name = std::format("Series {}", i);
-      //checks if we need to reregister data if the data location was changed
+      //checks if the sources to select from has changed
       reregister |= DataLocationSelector(name.c_str(), data_[i].loc);
       ImGui::SameLine();
 
@@ -83,18 +104,33 @@ void GenericGrapher::Draw(bool *should_close) {
       ImGui::TextUnformatted(std::format("{} samples", data_[i].data.Data.size()).c_str());
       ImGui::SameLine();
       
+      
+      //automatically resizes the text box
+      float text_width = ImGui::CalcTextSize(input_buffers[i].data()).x + 20;
+      if(text_width < 60){
+        text_width = 60;
+      }
+      ImGui::SetNextItemWidth(text_width);
+
+      //sets up the id for the text input
+      ImGui::PushID(i);
+      std::string label = "##" + std::to_string(i);
       //Input text for data so we can send data back to the webserver if we want
-      if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_::ImGuiInputTextFlags_EnterReturnsTrue)) {
+      if (ImGui::InputText(label.c_str(), input_buffers[i].data(), input_buffers[i].size(), ImGuiInputTextFlags_::ImGuiInputTextFlags_EnterReturnsTrue)) {
         //gets the data input into the text box
         SendingData data_to_send{
-            .data = input_buffer,
+            .waiting_to_send = true,
+            .data = input_buffers[i].data(),
+            .data_type = Float,
             .loc = data_[i].loc,
         };
+        
         // printf("Data Inputted: %s, Data Input Locator: %s\n", input_buffer, data_[i].loc.path.parts[data_[i].loc.path.parts.size() - 1]);
         //adds the data to the queue to send to the webserver
-        printf("Data to send Entered!\n");
+        // printf("Data to send Entered!\n");
         SendToWebSocketCallback(data_to_send);
       }
+      ImGui::PopID();
     }
     //Button to add a new series of data to the grapher
     if (ImGui::Button("Add Series")) {
@@ -122,7 +158,19 @@ void GenericGrapher::Draw(bool *should_close) {
     if (ImPlot::BeginPlot("Scrolling", ImVec2(-1, 250))) {
 
       //creates the axis for the graph
-      ImPlot::SetupAxes("Scrolling Title a", "Scrolling Title b", flags, flags);
+      // ImPlot::SetupAxes("Scrolling Title a", "Scrolling Title b", flags, flags);
+
+      static float range_min = 0.0f;
+      static float range_max = 10.0f;
+
+      // Input boxes for range
+      ImGui::InputFloat("Range Min", &range_min, 0.0f, 0.0f, "%.3f");
+      ImGui::InputFloat("Range Max", &range_max, 0.0f, 0.0f, "%.3f");
+
+      // Clamp so min < max
+      if (range_max <= range_min) {
+          range_max = range_min + 0.1f;
+      }
 
       //checks that the data and time data are both real
       if (!data_.empty() && !time_data_.Data.empty()) {
@@ -138,7 +186,7 @@ void GenericGrapher::Draw(bool *should_close) {
 
         //Sets the axis limits using the now and old data
         ImPlot::SetupAxisLimits(ImAxis_X1, old, now, ImGuiCond_Always);
-        ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
+        ImPlot::SetupAxisLimits(ImAxis_Y1, range_min, range_max, ImGuiCond_Always);
         ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5F);
 
         //goes through all the data inside our found data
@@ -164,7 +212,6 @@ void GenericGrapher::Draw(bool *should_close) {
  * Function for Clearing and Reregistering the data in the grapher 
  */
 void GenericGrapher::ClearAndReregister() {
-
   DataLocationSet wanted_data{};
   //reserves the space in the location set for the data we want
   wanted_data.reserve(data_.size());

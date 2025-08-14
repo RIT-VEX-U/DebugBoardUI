@@ -84,11 +84,14 @@ struct DataElementDescriptionHash {
 struct DataElement {
   DataLocator location;
   DataPrimitive value;
+  DataPrimitiveType type;
 };
 
 //Struct for data we want to send that we got from the grapher
 struct SendingData {
-  std::string data;
+  bool waiting_to_send = false;
+  DataPrimitive data;
+  DataPrimitiveType data_type;
   DataLocator loc = {};
 };
 
@@ -121,6 +124,7 @@ using Timestamp = std::chrono::time_point<std::chrono::steady_clock>;
 
 struct DataAndTime {
   DataPrimitive value;
+  DataPrimitiveType type;
   Timestamp time;
 };
 
@@ -151,7 +155,7 @@ public:
   virtual std::string Name() const = 0;
   virtual DataElementSet ProvidedData() const = 0;
   virtual std::vector<DataUpdate> PollData() = 0;
-  virtual void SendData(SendingData data_to_send) = 0;
+  virtual void SendData(SendingData &data_to_send) = 0;
 
   virtual void Draw() = 0;
 };

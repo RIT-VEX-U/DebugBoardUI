@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <vector>
+#include <array>
 /**
  *
  */
@@ -38,10 +39,10 @@ public:
   void ClearAndReregister();
 
 private:
+  std::vector<std::array<char, 128>> input_buffers;
   float history = 60;
   Timestamp creation_time_;
   DataLocator time_loc_;
   ScrollingBuffer<float> time_data_;
-  char input_buffer[128] = "Input";
   std::vector<AxisData> data_;
 };

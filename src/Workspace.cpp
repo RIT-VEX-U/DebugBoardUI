@@ -71,7 +71,7 @@ void RouteData() {
       // foreach piece of data in that update
       for (const DataElement &data : up.new_data) {
         //get said data's value and the time when it was received
-        seen_data[data.location] = DataAndTime{data.value, up.rx_time};
+        seen_data[data.location] = DataAndTime{data.value, data.type, up.rx_time};
         //get the widgets that need said data
         auto more = activeWidgetsThatNeedThisData(data.location);
         //merge those widgets with our list of widgets we need to update
@@ -91,7 +91,6 @@ void RouteData() {
     Widget &widg = active_widgets.at(id);
     //foreach data locator in our widget's wanted data
     for (const DataLocator &loc : widg->WantedData()) {
-      // std::println("I want: {}", loc.toString());
       //check if the data is real and we have seen it
       if (loc.isEmpty() || !seen_data.contains(loc)) {
         std::println("REGISTERED UPDATES FROM EMPTY CHANNEL or CHANNEL THAT "
@@ -108,11 +107,11 @@ void RouteData() {
   //foreach widget id in all of our active widgets
   for(auto [id, widget]: active_widgets){
     //if the widget has data to send 
-    if(!widget->DataToSend().loc.isEmpty()){
+    if(widget->DataToSend().waiting_to_send){
       for(const auto &source: sources){
+        // printf("getting data to send to websocket\n");
         source.get()->SendData(widget->DataToSend());
       }
-      widget->ClearSentData();
     }
   }
 

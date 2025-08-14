@@ -45,7 +45,7 @@ public:
   std::string Name() const override;
   std::vector<DataUpdate> PollData() override;
   std::string FormatSendingData(SendingData data_to_format);
-  void SendData(SendingData data_to_send) override;
+  void SendData(SendingData &data_to_send) override;
   void Draw() override;
 
 private:
