@@ -1,6 +1,7 @@
 #include "../Types.hpp"
 #include "GraphUtils.hpp"
 #include "Widget.hpp"
+#include "imgui.h"
 
 #include <chrono>
 #include <vector>
@@ -13,6 +14,7 @@ public:
   //Struct for the axis data for the grapher
   struct AxisData {
     bool secondary_y = false;
+    ImVec4 color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f); 
     DataLocator loc = {};
     ScrollingBuffer<float> data;
   };

@@ -94,6 +94,15 @@ void GenericGrapher::Draw(bool *should_close) {
 
     //loops through all the axis data
     for (size_t i = 0; i < data_.size(); i++) {
+      ImGui::PushID(i);
+      if (ImGui::SmallButton("X"))
+      {
+          data_.erase(data_.begin() + i);
+          ImGui::PopID();
+          continue;
+      }
+      ImGui::PopID();
+      ImGui::SameLine();
       //Data selector for the data we are looking for
       std::string const name = std::format("Series {}", i);
       //checks if the sources to select from has changed
@@ -102,8 +111,17 @@ void GenericGrapher::Draw(bool *should_close) {
 
       //Text displaying how many samples we have retreived from the data locator we are looking at
       ImGui::TextUnformatted(std::format("{} samples", data_[i].data.Data.size()).c_str());
+      ImGui::TextUnformatted("Color:");
       ImGui::SameLine();
-      
+      //Color Picker for the series of data
+      ImGui::SetNextItemWidth(200);
+      ImGui::PushID(i + 1);
+      ImGui::ColorEdit3("##", (float*)&data_[i].color, ImGuiColorEditFlags_NoInputs);
+      ImGui::PopID();
+      ImGui::SameLine();
+      //Input for changing the data
+      ImGui::TextUnformatted("Input:");
+      ImGui::SameLine();
       
       //automatically resizes the text box
       float text_width = ImGui::CalcTextSize(input_buffers[i].data()).x + 20;
@@ -113,10 +131,9 @@ void GenericGrapher::Draw(bool *should_close) {
       ImGui::SetNextItemWidth(text_width);
 
       //sets up the id for the text input
-      ImGui::PushID(i);
-      std::string label = "##" + std::to_string(i);
+      ImGui::PushID(i + 2);
       //Input text for data so we can send data back to the webserver if we want
-      if (ImGui::InputText(label.c_str(), input_buffers[i].data(), input_buffers[i].size(), ImGuiInputTextFlags_::ImGuiInputTextFlags_EnterReturnsTrue)) {
+      if (ImGui::InputText("##", input_buffers[i].data(), input_buffers[i].size(), ImGuiInputTextFlags_::ImGuiInputTextFlags_EnterReturnsTrue)) {
         //gets the data input into the text box
         SendingData data_to_send{
             .waiting_to_send = true,
@@ -162,10 +179,41 @@ void GenericGrapher::Draw(bool *should_close) {
 
       static float range_min = 0.0f;
       static float range_max = 10.0f;
+      static float domain = 60.0f;
 
-      // Input boxes for range
-      ImGui::InputFloat("Range Min", &range_min, 0.0f, 0.0f, "%.3f");
-      ImGui::InputFloat("Range Max", &range_max, 0.0f, 0.0f, "%.3f");
+      // Input boxes for range and history
+      float range_min_width = ImGui::CalcTextSize((std::to_string(range_min).c_str())).x + 10;
+      if(range_min_width < 30){
+        range_min_width = 30;
+      }
+      ImGui::TextUnformatted("Range Min:");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(range_min_width);
+      ImGui::PushID(0);
+      ImGui::InputFloat("", &range_min, 0.0f, 0.0f, "%.3f");
+      ImGui::PopID();
+      ImGui::SameLine();
+      float range_max_width = ImGui::CalcTextSize((std::to_string(range_max).c_str())).x + 10;
+      if(range_max_width < 30){
+        range_max_width = 30;
+      }
+      ImGui::TextUnformatted("Range Min:");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(range_max_width);
+      ImGui::PushID(1);
+      ImGui::InputFloat("", &range_max, 0.0f, 0.0f, "%.3f");
+      ImGui::PopID();
+
+      float history_width = ImGui::CalcTextSize((std::to_string(history).c_str())).x + 10;
+      if(history_width < 30){
+        history_width = 30;
+      }
+      ImGui::TextUnformatted("History:");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(history_width);
+      ImGui::PushID(2);
+      ImGui::InputFloat("", &history, 0.0f, 0.0f, "%.3f");
+      ImGui::PopID();
 
       // Clamp so min < max
       if (range_max <= range_min) {
@@ -199,7 +247,8 @@ void GenericGrapher::Draw(bool *should_close) {
           }
           //plots the line of data using the data we found and the time we have
           //whatthefuck im gonna data all over this data
-          ImPlot::PlotLine("Data", time_data_.Data.data(), mydata.data.Data.data(), mydata.data.Data.size(), 0, mydata.data.Offset, sizeof(float));
+          ImPlot::SetNextLineStyle(i.color);
+          ImPlot::PlotLine(i.loc.path.parts[i.loc.path.parts.size() - 1].c_str(), time_data_.Data.data(), mydata.data.Data.data(), mydata.data.Data.size(), 0, mydata.data.Offset, sizeof(float));
         }
       }
       ImPlot::EndPlot();
