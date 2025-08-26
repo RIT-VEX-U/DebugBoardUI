@@ -4,7 +4,6 @@
 #include "implot/implot.h"
 #include "implot/implot_internal.h"
 #include "platform/glue.hpp"
-#include <GL/gl.h>
 #include <cstdio>
 #include <format>
 #include "stb/stb_image.h"
@@ -17,7 +16,6 @@
 #endif
 
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
-
 
 CMRC_DECLARE(assets);
 
@@ -161,10 +159,10 @@ void prerender(Data /*data*/)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiWindowFlags const window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse
-                                          | ImGuiWindowFlags_MenuBar
-                                          | ImGuiWindowFlags_DockNodeHost;
+    //set up the flags we want to use on all our windows
+    ImGuiWindowFlags const window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse| ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_DockNodeHost;
     ImGuiID const imid = 0;
+    //docks the gui over the main screen of the computer
     ImGui::DockSpaceOverViewport(imid, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 void postrender(Data pdata)

@@ -1,10 +1,11 @@
 #pragma once
 #include <chrono>
 #include <cstdint>
+#include <expected>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -45,12 +46,11 @@ struct DataLocator {
   bool operator==(const DataLocator &) const;
 };
 // Hasher for DataLocator. Allows use in sets
-struct DataLocatorHasher{
-    size_t operator()(const DataLocator &) const;
+struct DataLocatorHasher {
+  size_t operator()(const DataLocator &) const;
 };
 
 using DataLocationSet = std::unordered_set<DataLocator, DataLocatorHasher>;
-
 
 /**
  * Types that can be made available by sources.
@@ -84,16 +84,61 @@ struct DataElementDescriptionHash {
 struct DataElement {
   DataLocator location;
   DataPrimitive value;
+  DataPrimitiveType type;
+};
+
+//Struct for data we want to send that we got from the grapher
+struct SendingData {
+  bool waiting_to_send = false;
+  DataPrimitive data;
+  DataPrimitiveType data_type;
+  DataLocator loc = {};
+};
+
+template <> struct std::formatter<DataLocator> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+};
+
+template <> struct std::formatter<DataPrimitive> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+
+  auto format(const DataPrimitive &obj, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "Value");
+    // std::visit<>([&ctx](const auto &
+    // val) { return std::format_to(ctx.out(), "Value: {}", val); },
+    // obj);
+  }
+};
+
+template <> struct std::formatter<DataElement> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+
+  auto format(const DataElement &obj, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "ASDF");
+    // std::format_to(ctx.out(), "Location: {}, Value: {}", obj.location,
+    // obj.value);
+  }
 };
 
 using Timestamp = std::chrono::time_point<std::chrono::steady_clock>;
 
-struct DataAndTime{
-    DataPrimitive value;
-    Timestamp time;
+struct DataAndTime {
+  DataPrimitive value;
+  DataPrimitiveType type;
+  Timestamp time;
 };
 
-using TimedData = std::unordered_map<DataLocator, DataAndTime, DataLocatorHasher>;
+
+template <> struct std::formatter<DataAndTime> {
+  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+
+  auto format(const DataAndTime &obj, std::format_context &ctx) const {
+    return std::format_to(ctx.out(), "DataAndTime{{ {} }}", obj.value);
+  }
+};
+
+using TimedData =
+    std::unordered_map<DataLocator, DataAndTime, DataLocatorHasher>;
 
 struct DataUpdate {
   Timestamp rx_time;
@@ -110,6 +155,7 @@ public:
   virtual std::string Name() const = 0;
   virtual DataElementSet ProvidedData() const = 0;
   virtual std::vector<DataUpdate> PollData() = 0;
+  virtual void SendData(SendingData &data_to_send) = 0;
 
   virtual void Draw() = 0;
 };
@@ -123,3 +169,10 @@ public:
  * @return true if the user made a selection with this widget
  */
 bool DataLocationSelector(const char *name, DataLocator &current);
+
+enum class DataRetrieveFailure {
+  KeyNotFound,
+  ValueWrongType,
+};
+std::expected<double, DataRetrieveFailure> getDoubleAt(const DataLocator &loc,
+                                                       const TimedData &data);

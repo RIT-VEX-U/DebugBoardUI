@@ -24,7 +24,7 @@ else()
     message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
 
-
+set(GLFW_BUILD_DOCS OFF)
 # ImGui, ImPlot, GLFW, JSON, CmakeRC
 add_subdirectory(vendor)
 add_subdirectory(src/widgets)

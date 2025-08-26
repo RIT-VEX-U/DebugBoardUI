@@ -23,23 +23,23 @@ public:
   }
   void Erase() {
     if (!Data.empty()) {
-      Data.shrink(0);
+      Data.resize(0);
       Offset = 0;
     }
   }
 
-  value_type Oldest(){return Data[Offset];}
-  value_type Recent(){
-      size_t i = Offset;
-      if (i == 0){
-          i = Data.size() - 1;
-      } else {
-          i = i-1;
-      }
-      return Data[i];
-
+  // @pre Data.size() > 0
+  value_type Oldest() { return Data[Offset]; }
+  // @pre Data.size() > 0
+  value_type Recent() {
+    size_t i = Offset;
+    if (i == 0) {
+      i = Data.size() - 1;
+    } else {
+      i = i - 1;
+    }
+    return Data[i];
   }
-
 };
 
 // utility structure for realtime plot
