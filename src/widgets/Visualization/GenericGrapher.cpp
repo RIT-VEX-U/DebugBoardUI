@@ -197,7 +197,7 @@ void GenericGrapher::Draw(bool *should_close) {
       if(range_max_width < 30){
         range_max_width = 30;
       }
-      ImGui::TextUnformatted("Range Min:");
+      ImGui::TextUnformatted("Range Max:");
       ImGui::SameLine();
       ImGui::SetNextItemWidth(range_max_width);
       ImGui::PushID(1);

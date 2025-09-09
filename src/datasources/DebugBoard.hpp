@@ -5,6 +5,7 @@
 using json = nlohmann::json;
 #include "easywsclient/easywsclient.hpp"
 #include <chrono>
+#include <future>
 #include <memory>
 #include <string>
 #include <vector>
@@ -40,17 +41,20 @@ class DebugBoardWebsocket : public DebugBoard {
 public:
   using TimeDuration = std::chrono::duration<int64_t>;
 
-  explicit DebugBoardWebsocket(const std::string &ws_url, TimeDuration retry_period = std::chrono::seconds(1));
+  explicit DebugBoardWebsocket();
 
-  std::string Name() const override;
+  std::string Name() const override;\
   std::vector<DataUpdate> PollData() override;
   std::string FormatSendingData(SendingData data_to_format);
+  void ConnectAsync(std::string new_url);
+  bool IsReady();
   void SendData(SendingData &data_to_send) override;
   void Draw() override;
 
 private:
-  TimeDuration retry_period;
+  std::future<easywsclient::WebSocket::pointer> future_ws_;
   std::string ws_url_;
   std::unique_ptr<easywsclient::WebSocket> ws_;
+
   std::chrono::time_point<std::chrono::steady_clock> last_connect_time_;
 };

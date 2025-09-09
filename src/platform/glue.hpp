@@ -1,4 +1,5 @@
 #include <string>
+#include <GLFW/glfw3.h>
 namespace Platform {
 using Data = void *;
 
@@ -10,6 +11,11 @@ using Data = void *;
  * @return platform data. Keep this and pass it in to further Platform functions
  */
 Data init(const std::string &window_title);
+
+bool LoadTextureFromMemory(const void* data, size_t data_size, GLuint* out_texture, int* out_width, int* out_height);
+
+bool LoadTextureFromFile(const char* file_name, GLuint* out_texture, int* out_width, int* out_height);
+
 /**
  * Called before beginning rendering for a given iteration of the game loop
  * Prepares for ImGui functions to be called

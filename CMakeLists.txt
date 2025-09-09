@@ -28,6 +28,8 @@ set(GLFW_BUILD_DOCS OFF)
 # ImGui, ImPlot, GLFW, JSON, CmakeRC
 add_subdirectory(vendor)
 add_subdirectory(src/widgets)
+add_subdirectory(src/datasources)
+add_subdirectory(src/platform)
 
 
 ## Create main executable
@@ -56,7 +58,7 @@ target_include_directories(
 	src/
 )
 
-target_link_libraries(DebugBoardUI PRIVATE VendorDeps Widgets)
+target_link_libraries(DebugBoardUI PRIVATE VendorDeps Widgets Datasources Platform)
 
 target_sources(
 	DebugBoardUI
@@ -66,6 +68,5 @@ target_sources(
 		src/Workspace.cpp
 		src/Types.cpp
 		src/datasources/DebugBoard.cpp
-
 
 )

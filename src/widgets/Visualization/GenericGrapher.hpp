@@ -30,11 +30,13 @@ public:
    * @param data the new data we have received
    */
   void ReceiveData(TimedData data) override;
+
   /**
    * Draws all the sections of the Generic Grapher
    * @param should_close whether or not we should close the grapher
    */
   void Draw(bool *should_close) override;
+  
   /**
    * Function for Clearing and Reregistering the data in the grapher 
    */

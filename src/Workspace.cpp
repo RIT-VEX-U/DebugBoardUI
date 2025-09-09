@@ -66,6 +66,9 @@ void RouteData() {
   for (const auto &source : sources) {
     //poll the data at said source
     const std::vector<DataUpdate> &src_updates = source->PollData();
+    if(src_updates.empty()){
+        continue;
+      }
     // foreach new update
     for (const DataUpdate &up : src_updates) {
       // foreach piece of data in that update
