@@ -10,7 +10,7 @@ int main() {
   Platform::Data pdata = Platform::init("Debug Board UI");
   std::println("Initializing Workspace");
   Workspace::Init();
-
+  
   // Main loop
   while (!Platform::shouldclose(pdata)) {
     
