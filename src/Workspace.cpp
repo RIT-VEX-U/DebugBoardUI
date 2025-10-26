@@ -64,19 +64,25 @@ void RouteData() {
 
   // foreach data source
   for (const auto &source : sources) {
-    //poll the data at said source
-    const std::vector<DataUpdate> &src_updates = source->PollData();
-    // foreach new update
-    for (const DataUpdate &up : src_updates) {
-      // foreach piece of data in that update
-      for (const DataElement &data : up.new_data) {
-        //get said data's value and the time when it was received
-        seen_data[data.location] = DataAndTime{data.value, data.type, up.rx_time};
-        //get the widgets that need said data
-        auto more = activeWidgetsThatNeedThisData(data.location);
-        //merge those widgets with our list of widgets we need to update
-        to_update.merge(more);
+    //if the data source is ready to poll data
+    if(source->isReady()){
+      //poll the sources data
+      const std::vector<DataUpdate> &src_updates = source->PollData();
+      // foreach new update
+      for (const DataUpdate &up : src_updates) {
+        // foreach piece of data in that update
+        for (const DataElement &data : up.new_data) {
+          //get said data's value and the time when it was received
+          seen_data[data.location] = DataAndTime{data.value, data.type, up.rx_time};
+          //get the widgets that need said data
+          auto more = activeWidgetsThatNeedThisData(data.location);
+          //merge those widgets with our list of widgets we need to update
+          to_update.merge(more);
+        }
       }
+    }
+    else{
+      continue;
     }
   }
   //foreach widget id in our list of widgets to update

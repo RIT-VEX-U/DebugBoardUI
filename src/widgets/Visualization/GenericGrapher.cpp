@@ -27,9 +27,6 @@ void GenericGrapher::ReceiveData(TimedData new_data) {
   std::expected<double, DataRetrieveFailure> time = getDoubleAt(time_loc_, new_data);
   //double check that the time set actually has a time
   if (!time.has_value()) {
-    for (auto [k, v] : new_data) {
-      // std::println("{}:{}", k, v);
-    }
     std::println("Ignoring data packet, no time: {}", (int)time.error());
     return;
   }
@@ -197,7 +194,7 @@ void GenericGrapher::Draw(bool *should_close) {
       if(range_max_width < 30){
         range_max_width = 30;
       }
-      ImGui::TextUnformatted("Range Min:");
+      ImGui::TextUnformatted("Range Max:");
       ImGui::SameLine();
       ImGui::SetNextItemWidth(range_max_width);
       ImGui::PushID(1);

@@ -1,6 +1,7 @@
 #include "ControlSystems/PidVizWidget.hpp"
 #include "Visualization/FieldMapWidget.hpp"
 #include "Visualization/GenericGrapher.hpp"
+#include "Connection/ConnectWidget.hpp"
 #include "Widget.hpp"
 #include "WidgetRegistry.hpp"
 #include <memory>
@@ -15,5 +16,8 @@ void AddWidgetsToCollection(WidgetRegistry &reg) {
   });
   reg.RegisterWidget("Generic Grapher", [](WidgetId id) {
     return std::make_shared<GenericGrapher>(id);
+  });
+  reg.RegisterWidget("Connect", [](WidgetId id) {
+    return std::make_shared<ConnectWidget>(id);
   });
 }

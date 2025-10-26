@@ -31,6 +31,15 @@ std::vector<DataUpdate> DebugBoard::PollData() {
   return updates;
 }
 
+bool DebugBoard::isReady(){
+  if(unread_updates.empty()){
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
 DebugBoard::DataElementSet DebugBoard::ProvidedData() const {
   return current_channels;
 }
@@ -94,12 +103,12 @@ static void parseChannel(DataSource::DataElementSet &sofar, const json &chan_jso
     //gets the name and type of the channel
     std::string const name = o["name"];
     std::string valType = o["type"];
-    println("parsed name: {}, of type: {}", name, valType);
+    // println("parsed name: {}, of type: {}", name, valType);
     //gets the path of the name
     std::vector<std::string> path = path_so_far;
     
     path.push_back(name);
-    println("path parsed: {}", path);
+    // println("path parsed: {}", path);
 
     //handles the data accordingly to the type
     if (valType == "record") {
@@ -184,7 +193,7 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
     for (int path_idx = 1; path_idx < path.size(); path_idx++) {
       auto d = curr_node.dump();
       if (curr_node.contains(path[path_idx])) {
-        std::println("found {} in {}", path[path_idx], d);
+        // std::println("found {} in {}", path[path_idx], d);
         curr_node = curr_node[path[path_idx]];
       } else {
         std::println("Couldnt find {} in {}", path[path_idx], d);
@@ -231,10 +240,31 @@ std::optional<DataError> DebugBoard::HandleData(const json &json_obj) {
       } else {
         return DataError{std::format("Expected a Uint at '{}' but got {}", datadesc.path.toString(), curr_node.dump())};
       }
-    } else {
-      std::println("INLKNOWN PRIITIZVE TYPE\n");
+    } else if (datadesc.type_hint == DataPrimitiveType::String) {
+      if (curr_node.is_string()) {
+        // we're good
+        std::string value = curr_node;
+        updates.push_back(
+            DataElement{.location = loc, .value = (std::string)value, .type = datadesc.type_hint});
+
+      } else {
+        return DataError{std::format("Expected a String at '{}' but got {}", datadesc.path.toString(), curr_node.dump())};
+      }
+    } else if (datadesc.type_hint == DataPrimitiveType::Bool) {
+      if (curr_node.is_boolean()) {
+        std::println("founnd a bool");
+        // we're good
+        bool value = curr_node;
+        updates.push_back(
+            DataElement{.location = loc, .value = (bool)value, .type = datadesc.type_hint});
+
+      } else {
+        return DataError{std::format("Expected a Boolean at '{}' but got {}", datadesc.path.toString(), curr_node.dump())};
+      }
+    }  else {
+      std::println("UNKNOWN PRIMITIVE TYPE at {}\n", datadesc.path.toString());
     }
-  }
+  } 
 
   unread_updates.push_back(
       DataUpdate{.rx_time = Timestamp::clock::now(), .new_data = updates});
@@ -264,26 +294,29 @@ void DebugBoard::feedPacket(const json &json_obj) {
   }
 }
 
-DebugBoardWebsocket::DebugBoardWebsocket(const std::string &ws_url, TimeDuration retry_period): 
-ws_url_(ws_url), ws_(easywsclient::WebSocket::from_url(ws_url)) {
-  last_connect_time_ = std::chrono::steady_clock::now();
-  this->retry_period = retry_period;
-}
+DebugBoardWebsocket::DebugBoardWebsocket() {}
 
 std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
-  if (ws_ == nullptr) {
-    //idk if this works, looks like it dont
-    printf("Failed to connect to websocket, retrying in %lld seconds\n", retry_period.count());
-    std::this_thread::sleep_for(retry_period);
-    this->PollData();
-    // TODO: maybe handle reconnect
-    return DebugBoard::PollData();
-  }
-
   ws_->poll();
   ws_->dispatch([&](const std::string &msg) { DebugBoard::feedPacket(msg); });
 
   return DebugBoard::PollData();
+}
+
+void DebugBoardWebsocket::Connect(std::string ws_url) {
+  ws_url_ = ws_url;
+  ws_ = std::unique_ptr<easywsclient::WebSocket>(easywsclient::WebSocket::from_url(ws_url));
+  if(ws_ == nullptr){
+    printf("Failed to connect to websocket\n");
+    ready = false;
+  }
+  else{
+    ready = true;
+  }
+}
+
+bool DebugBoardWebsocket::isReady() {
+  return ready;
 }
 
 std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
@@ -310,14 +343,11 @@ std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
     
 
     //gets the name and type of the channel
-    // println("schema so far : {}\n", nlohmann::to_string(data_schema));
     std::string const str_name = o["name"];
     std::string valType = o["type"];
     
     //gets the path of the name
-    // println("current node before insertion: {}\n", nlohmann::to_string(current_node));
     nlohmann::ordered_json &next_node = current_node[str_name];
-    // println("next node: {}\n", nlohmann::to_string(next_node));
     //handles the data accordingly to the type
     if (valType == "record") {
       //handles a record by walking through each field and handling each feild
@@ -326,7 +356,6 @@ std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
         return;
       } else {
         for (const json &field : o["fields"]) {
-          // std::println("entering node: {}\n", nlohmann::to_string(next_node));
           walk_schema(next_node, field);
         }
 
@@ -335,24 +364,26 @@ std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){
     else if(str_name == data_to_format.loc.path.parts[data_to_format.loc.path.parts.size()-1]){
       //can we please pretend that this needs to be a data primitive and that I didn't do all this work for nothing
       try{
-      if(data_to_format.data_type == Float){
-        auto next_node_data = std::stof(std::get<std::string>(data_to_format.data));
-        next_node = next_node_data;
-      }
-      else if(data_to_format.data_type == Int){
-        auto next_node_data = std::stoi(std::get<std::string>(data_to_format.data));
-        next_node = next_node_data;
-      }
-      else if(data_to_format.data_type == Uint){
-        auto next_node_data = std::stoul(std::get<std::string>(data_to_format.data));
-        next_node = next_node_data;
-      }
-      else if(data_to_format.data_type == String){
-        auto next_node_data = std::get<std::string>(data_to_format.data);
-        next_node = next_node_data;
-      }
-      }
-      catch (const std::invalid_argument  e){
+        if(data_to_format.data_type == Float){
+          auto next_node_data = std::stof(std::get<std::string>(data_to_format.data));
+          next_node = next_node_data;
+        }
+        else if(data_to_format.data_type == Int){
+          auto next_node_data = std::stoi(std::get<std::string>(data_to_format.data));
+          next_node = next_node_data;
+        }
+        else if(data_to_format.data_type == Uint){
+          auto next_node_data = std::stoul(std::get<std::string>(data_to_format.data));
+          next_node = next_node_data;
+        }
+        else if(data_to_format.data_type == String){
+          auto next_node_data = std::get<std::string>(data_to_format.data);
+          next_node = next_node_data;
+        }
+        else if(data_to_format.data_type == Bool){
+          bool next_node_data = std::stoi(std::get<std::string>(data_to_format.data));
+        }
+      }catch (const std::invalid_argument  e){
         printf("invalid data entered, scrapping data\n");
         invalid_data = true;
       }

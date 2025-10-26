@@ -10,7 +10,7 @@ public:
 
   MapType::const_iterator cbegin() const;
   MapType::const_iterator cend() const;
-
+  
 private:
   MapType registered_widgets;
 };

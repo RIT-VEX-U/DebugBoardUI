@@ -62,13 +62,14 @@ enum DataPrimitiveType {
   Float,
   Int,
   Uint,
+  Bool,
 };
 
 /**
  * Type that can hold base element of data that sources can provide
  * "The thing at the end of the path"
  */
-using DataPrimitive = std::variant<std::string, double, int64_t, uint64_t>;
+using DataPrimitive = std::variant<std::string, double, bool, int64_t, uint64_t>;
 
 struct DataElementDescription {
   DataPath path;
@@ -156,6 +157,7 @@ public:
   virtual DataElementSet ProvidedData() const = 0;
   virtual std::vector<DataUpdate> PollData() = 0;
   virtual void SendData(SendingData &data_to_send) = 0;
+  virtual bool isReady() = 0;
 
   virtual void Draw() = 0;
 };
