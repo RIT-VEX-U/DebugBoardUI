@@ -157,6 +157,7 @@ public:
   virtual DataElementSet ProvidedData() const = 0;
   virtual std::vector<DataUpdate> PollData() = 0;
   virtual void SendData(SendingData &data_to_send) = 0;
+  virtual bool isReady() = 0;
 
   virtual void Draw() = 0;
 };

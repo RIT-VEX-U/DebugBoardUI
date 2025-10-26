@@ -112,7 +112,13 @@
     "alignedvector3": "cpp",
     "semaphore": "cpp",
     "stdfloat": "cpp",
-    "cfenv": "cpp"
+    "cfenv": "cpp",
+    "strstream": "cpp",
+    "coroutine": "cpp",
+    "csetjmp": "cpp",
+    "source_location": "cpp",
+    "shared_mutex": "cpp",
+    "typeindex": "cpp"
   },
   "C_Cpp.default.compilerPath": "/usr/bin/g++"
 }

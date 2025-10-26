@@ -31,6 +31,15 @@ std::vector<DataUpdate> DebugBoard::PollData() {
   return updates;
 }
 
+bool DebugBoard::isReady(){
+  if(unread_updates.empty()){
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
 DebugBoard::DataElementSet DebugBoard::ProvidedData() const {
   return current_channels;
 }
@@ -288,31 +297,26 @@ void DebugBoard::feedPacket(const json &json_obj) {
 DebugBoardWebsocket::DebugBoardWebsocket() {}
 
 std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
-  if (this->IsReady()) {
-            ws_.reset(future_ws_.get());
-  }
-  if (ws_ == nullptr) {
-    //idk if this works, looks like it dont
-    printf("Failed to connect to websocket\n");
-    std::vector<DataUpdate> failed_update;
-    return failed_update;
-  }
   ws_->poll();
   ws_->dispatch([&](const std::string &msg) { DebugBoard::feedPacket(msg); });
 
   return DebugBoard::PollData();
 }
 
-void DebugBoardWebsocket::ConnectAsync(std::string ws_url) {
-  ws_url_ = ws_url;
-        future_ws_ = std::async(std::launch::async, [this]() {
-            return easywsclient::WebSocket::from_url(ws_url_);
-        });
+void DebugBoardWebsocket::Connect(std::string ws_url) {
+  ws_url_ = ws_url;C28D5E
+  ws_ = std::unique_ptr<easywsclient::WebSocket>(easywsclient::WebSocket::from_url(ws_url));
+  if(ws_ == nullptr){
+    printf("Failed to connect to websocket\n");
+    ready = false;
+  }
+  else{
+    ready = true;
+  }
 }
 
-bool DebugBoardWebsocket::IsReady() {
-        if (!future_ws_.valid()) return false;
-        return future_ws_.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+bool DebugBoardWebsocket::isReady() {
+  return ready;
 }
 
 std::string DebugBoardWebsocket::FormatSendingData(SendingData data_to_format){

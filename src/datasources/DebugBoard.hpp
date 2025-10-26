@@ -27,6 +27,7 @@ public:
 
   void feedPacket(const std::string &json_obj);
   void feedPacket(const json &json_obj);
+  bool isReady() override;
 
 private:
   DataElementSet current_channels;
@@ -46,8 +47,8 @@ public:
   std::string Name() const override;\
   std::vector<DataUpdate> PollData() override;
   std::string FormatSendingData(SendingData data_to_format);
-  void ConnectAsync(std::string new_url);
-  bool IsReady();
+  void Connect(std::string new_url);
+  bool isReady() override;
   void SendData(SendingData &data_to_send) override;
   void Draw() override;
 
@@ -55,6 +56,6 @@ private:
   std::future<easywsclient::WebSocket::pointer> future_ws_;
   std::string ws_url_;
   std::unique_ptr<easywsclient::WebSocket> ws_;
-
+  bool ready;
   std::chrono::time_point<std::chrono::steady_clock> last_connect_time_;
 };
