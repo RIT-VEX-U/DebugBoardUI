@@ -304,7 +304,7 @@ std::vector<DataUpdate> DebugBoardWebsocket::PollData() {
 }
 
 void DebugBoardWebsocket::Connect(std::string ws_url) {
-  ws_url_ = ws_url;C28D5E
+  ws_url_ = ws_url;
   ws_ = std::unique_ptr<easywsclient::WebSocket>(easywsclient::WebSocket::from_url(ws_url));
   if(ws_ == nullptr){
     printf("Failed to connect to websocket\n");
